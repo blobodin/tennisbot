@@ -4,10 +4,10 @@
 
   <!-- Start the trajectory demo -->
   <node pkg ="tennisbot"
-  	type="INSERT TRAJECTORY SCRIPT NAME"
+  	type="gazebo_trajectory.py"
 	name="trajectory"
 	output="screen"
 	required="true">
-  </node> 
+  </node>
 
 </launch>

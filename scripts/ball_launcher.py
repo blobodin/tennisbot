@@ -24,9 +24,9 @@ def spawn_ball(init_pos):
 
     spawn_model(item_name, product_xml, "", init_pose, "world")
 
-def launch_ball(init_pos, init_vel, model_name):
+def launch_ball(init_pos, init_vel):
     state_msg = ModelState()
-    state_msg.model_name = model_name
+    state_msg.model_name = "tennisball"
 
     # Code for setting position
     state_msg.pose.position.x = init_pos[0]

@@ -27,6 +27,9 @@ from kinematics import Kinematics, p_from_T, R_from_T, Rx, Ry, Rz
 # Import the Spline stuff:
 from splines import  CubicSpline, Goto, Hold, Stay, QuinticSpline, Goto5
 
+# Import tennisball stuff:
+from ball_launcher import *
+from ball_kinematics import Ball_Kinematics
 
 #
 #  Generator Class
@@ -40,7 +43,7 @@ class Generator:
         self.N    = 7
         self.pubs = []
         for i in range(self.N):
-            topic = "/sevendof/j" + str(i+1) + "_pd_control/command"
+            topic = "/tennis/j" + str(i+1) + "_pd_control/command"
             self.pubs.append(rospy.Publisher(topic, Float64, queue_size=10))
 
         # # We used to add a short delay to allow the connection to form
@@ -53,26 +56,33 @@ class Generator:
         # but that's appropriate if we don't want to start until we
         # have this information.  Of course, the simulation starts at
         # zero, so we can simply use that information too.
-        msg = rospy.wait_for_message('/sevendof/joint_states', JointState);
+        msg = rospy.wait_for_message('/tennis/joint_states', JointState);
         theta0 = np.array(msg.position).reshape((-1,1))
         rospy.loginfo("Gazebo's starting position: %s", str(theta0.T))
 
         # IF we wanted to do kinematics:
         # # Grab the robot's URDF from the parameter server.
-        # robot = Robot.from_parameter_server()
+        robot = Robot.from_parameter_server()
         # # Instantiate the Kinematics
-        # self.kin = Kinematics(robot, 'world', 'tip')
+        self.kin = Kinematics(robot, 'world', 'tip')
 
-        # Pick a starting and final joint position.
-        thetaA = np.zeros((self.N, 1))
-        thetaB = np.array([-np.pi/2, np.pi/4, 0.0, -np.pi/2, 0.0, -np.pi/4, 0.0]).reshape((-1,1))
+        # Set the ready state
+        self.ready_state = np.array([-np.pi/4, -np.pi/4, -np.pi/4, np.pi/2, np.pi/4, np.pi/4, np.pi/4]).reshape((7,1))
+        self.fore_hand = np.array([-(7/8) * np.pi, 0.0, -np.pi/2, np.pi/4, np.pi/4, np.pi/4, np.pi/4]).reshape((7,1))
+
+        # self.ball_v = [0, -5, 4.5]
+        # self.ball_p = [0.75, 5, 1]
+        # self.ball_kin = Ball_Kinematics(self.ball_v, self.ball_p)
+        # hit_time = self.ball_kin.compute_time_intersect_x()
 
         # Create the trajectory segments.  When the simulation first
         # turns on, the robot sags slightly due to it own weight.  So
         # we start with a 2s hold to allow any ringing to die out.
-        self.segments = (Hold(thetaA, 2.0),)
-
-        FIX THIS: DO YOU WANT MORE SEGMENTS?
+        self.segments = [
+            Hold(self.ready_state, 2.0),
+            Goto(self.ready_state, self.fore_hand, 2.0),
+            Goto()
+        ]
 
         # Also reset the trajectory, starting at the beginning.
         self.reset()
@@ -101,9 +111,6 @@ class Generator:
 
         # Grab the spline output as joint values.
         (theta, thetadot) = self.segments[self.index].evaluate(t - self.t0)
-
-        FIX THIS: OR YOU MAY DECIDE TO PROGRAM SOME OTHER FORM OF TRAJECTORY?
-
 
         # Send the individal angle commands.
         for i in range(self.N):
@@ -159,5 +166,3 @@ if __name__ == "__main__":
             generator.reset()
             starttime = rospy.Time.now()
             lasttime  = starttime
-            
-            
