@@ -16,7 +16,6 @@
   <arg name="control_parameters"
        default="$(find tennisbot)/config/tennis_control_parameters.yaml"/>
 
-
   <!-- Load the URDF into the ROS Parameter Server -->
   <param name="robot_description" textfile="$(arg model)"/>
 
