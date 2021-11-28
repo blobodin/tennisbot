@@ -4,7 +4,7 @@
 #  These parameters support the various controllers.  They are
 #  collected under the namespace of the robot.
 #
-sevendof:
+tennis:
 
   # The joint_state publisher.  This is a fake controller
   # that causes Gazebo to produce the joint_states topic.
@@ -14,6 +14,9 @@ sevendof:
 
   # Quasi-Static Version: Skip the dynamics - these controllers
   # set/force the simulation to the position (angle) commands.
+  # j0_setposition:
+  #   type: position_controllers/JointPositionController
+  #   joint: theta0
   j1_setposition:
     type: position_controllers/JointPositionController
     joint: theta1
@@ -38,6 +41,9 @@ sevendof:
 
   # Dynamic Version: Effort commands - these controllers set the
   # effort (torque) values in the simulation w/o position feedback.
+  # j0_seteffort:
+  #   type: effort_controllers/JointEffortController
+  #   joint: theta0
   j1_seteffort:
     type: effort_controllers/JointEffortController
     joint: theta1
@@ -62,6 +68,10 @@ sevendof:
 
   # Dynamic Version: PD control - these controllers use the given
   # PD gains to control to the position (angle) commands.
+  # j0_pd_control:
+  #   type: effort_controllers/JointPositionController
+  #   joint: theta0
+  #   pid: {p: 10000.0, i: 0.0, d: 10.0}
   j1_pd_control:
     type: effort_controllers/JointPositionController
     joint: theta1
