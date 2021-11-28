@@ -43,12 +43,12 @@
 	args="-urdf -model tennis -param robot_description"/>
 
   <!-- Service call to gazebo_ros to spawn a tetherball model -->
-  <node pkg ="gazebo_ros"
+  <!-- <node pkg ="gazebo_ros"
 	type="spawn_model"
 	name="tehterball_spawner"
 	respawn="false"
 	output="screen"
-	args="-sdf -model tetherball -file $(find tennisbot)/models/tetherball/model.sdf -x -0.2 -y 0.5 -z 1.2"/>
+	args="-sdf -model tetherball -file $(find tennisbot)/models/tetherball/model.sdf -x -0.2 -y 0.5 -z 1.2"/> -->
 
   <!-- Service call to gazebo_ros to spawn a tetherball model -->
   <node pkg ="gazebo_ros"

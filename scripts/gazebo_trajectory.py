@@ -68,21 +68,40 @@ class Generator:
 
         # Set the ready state
         self.ready_state = np.array([-np.pi/4, -np.pi/4, -np.pi/4, np.pi/2, np.pi/4, np.pi/4, np.pi/4]).reshape((7,1))
-        self.fore_hand = np.array([-(7/8) * np.pi, 0.0, -np.pi/2, np.pi/4, np.pi/4, np.pi/4, np.pi/4]).reshape((7,1))
+        (T,J) = self.kin.fkin(self.ready_state)
+        self.ready_p = p_from_T(T)
+        self.ready_R = R_from_T(T)
 
-        # self.ball_v = [0, -5, 4.5]
-        # self.ball_p = [0.75, 5, 1]
-        # self.ball_kin = Ball_Kinematics(self.ball_v, self.ball_p)
-        # hit_time = self.ball_kin.compute_time_intersect_x()
+        # Set the fore hand state
+        self.fore_hand = np.array([-(7/8) * np.pi, 0.0, -np.pi/2, np.pi/4, np.pi/4, np.pi/4, np.pi/4]).reshape((7,1))
+        (T,J) = self.kin.fkin(self.ready_state)
+        self.fore_p = p_from_T(T)
+        self.fore_R = R_from_T(T)
+
+        # Set launched tennis ball conditions
+        ball_p_i = [0.75, 5, 1]
+        ball_v_i = [0, -5, 4.5]
+        self.ball_kin = Ball_Kinematics(ball_v_i, ball_p_i)
+        self.hit_time = self.ball_kin.compute_time_intersect_x()
+
+        delete_ball()
+        spawn_ball(ball_p_i)
+        launch_ball(ball_p_i, ball_v_i)
 
         # Create the trajectory segments.  When the simulation first
         # turns on, the robot sags slightly due to it own weight.  So
         # we start with a 2s hold to allow any ringing to die out.
         self.segments = [
-            Hold(self.ready_state, 2.0),
-            Goto(self.ready_state, self.fore_hand, 2.0),
-            Goto()
+            Hold(self.ready_state, self.hit_time/4),
+            Goto(self.ready_state, self.fore_hand, self.hit_time/4),
+            Goto(0.0, 1.0, self.hit_time/2, space = "Path"),
+            Goto(1.0, 2.0, 1.0, space = "Path")
         ]
+
+        self.lasttheta = theta0
+
+        # Initialize/save the parameter.
+        self.lam = .01
 
         # Also reset the trajectory, starting at the beginning.
         self.reset()
@@ -93,6 +112,36 @@ class Generator:
         self.t0    = 0.0
         self.index = 0
 
+    # Path
+    def pd(self, s):
+        if s <= 1.0:
+            return self.fore_p + (self.ball_kin.compute_pos(self.hit_time) - self.fore_p) * s
+        else:
+            return self.ready_p
+
+    def vd(self, s, sdot):
+        if s <= 1.0:
+            return (self.ball_kin.compute_pos(self.hit_time) - self.fore_p) * sdot
+        else:
+            return np.array([0, 0, 0]).reshape((3, 1))
+
+    def Rd(self, s):
+        if s <= 1.0:
+            return np.zeros((3, 3))
+        else:
+            return self.ready_R
+
+    def wd(self, s, sdot):
+        return np.array([0, 0, 0]).reshape((3, 1))
+
+    # Error functions
+    def ep(self, pd, pa):
+        return (pd - pa)
+
+    def eR(self, Rd, Ra):
+        return 0.5*(np.cross(Ra[:,0:1], Rd[:,0:1], axis=0) +
+                    np.cross(Ra[:,1:2], Rd[:,1:2], axis=0) +
+                    np.cross(Ra[:,2:3], Rd[:,2:3], axis=0))
 
     # Update is called every 10ms of simulation time!
     def update(self, t, dt):
@@ -107,10 +156,54 @@ class Generator:
         if (self.index >= len(self.segments)):
             rospy.signal_shutdown("Done with motion")
             return
+        # Decide what to do based on the space.
+        if (self.segments[self.index].space() == 'Joint'):
+            # Grab the spline output as joint values.
+            (theta, thetadot) = self.segments[self.index].evaluate(t - self.t0)
+
+        elif (self.segments[self.index].space() == 'Path'):
+            # Determine the desired tip position/rotation/velocities (task
+            # information) for the current time.  Start grabbing the
+            # current path variable (from the spline segment).  Then use
+            # the above functions to convert to p/R/v/w:
+            (s, sdot) = self.segments[self.index].evaluate(t - self.t0)
+            pd = self.pd(s)
+            Rd = self.Rd(s)
+            vd = self.vd(s,sdot)
+            wd = self.wd(s,sdot)
+
+            print(pd, Rd, vd, wd)
+
+            # Then start at the last cycle's joint values.
+            theta = self.lasttheta
+
+            # Compute the forward kinematics (using last cycle's theta),
+            # extracting the position and orientation.
+            (T,J) = self.kin.fkin(theta)
+            p     = p_from_T(T)
+            R     = R_from_T(T)
+
+            # Stack the linear and rotation reference velocities (summing
+            # the desired velocities and scaled errors)
+            xrdot = np.vstack((vd + self.lam * self.ep(pd, p),
+                               wd + self.lam * self.eR(Rd, R)))
+
+            # Take an IK step, using Euler integration to advance the joints.
+            thetadot = np.linalg.pinv(J) @ xrdot
+            theta    = theta + dt * thetadot
 
 
-        # Grab the spline output as joint values.
-        (theta, thetadot) = self.segments[self.index].evaluate(t - self.t0)
+        # Save the joint values (to be used next cycle).
+        self.lasttheta = theta
+
+        # # Collect and send the JointState message (with the current time).
+        # cmdmsg = JointState()
+        # cmdmsg.name         = ['theta1', 'theta2', 'theta3',
+        #                        'theta4', 'theta5', 'theta6']
+        # cmdmsg.position     = theta
+        # cmdmsg.velocity     = thetadot
+        # cmdmsg.header.stamp = rospy.Time.now()
+        # self.pub.publish(cmdmsg)
 
         # Send the individal angle commands.
         for i in range(self.N):
