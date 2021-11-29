@@ -74,13 +74,21 @@ class Generator:
 
         # Set the fore hand state
         self.fore_hand = np.array([-(7/8) * np.pi, 0.0, -np.pi/2, np.pi/4, np.pi/4, np.pi/4, np.pi/4]).reshape((7,1))
-        (T,J) = self.kin.fkin(self.ready_state)
+        (T,J) = self.kin.fkin(self.fore_hand)
         self.fore_p = p_from_T(T)
         self.fore_R = R_from_T(T)
 
+        # Set the back hand state
+        self.back_hand = np.array([1.25, -0.5, 1.5, -np.pi/2, -2.5, -0.75, 0.25]).reshape((7,1))
+        (T,J) = self.kin.fkin(self.back_hand)
+        self.back_p = p_from_T(T)
+        self.back_R = R_from_T(T)
+
         # Set launched tennis ball conditions
-        ball_p_i = [0.75, 5, 1]
+        ball_p_i = [1.05, 5, 1.005]
         ball_v_i = [0, -5, 4.5]
+        # ball_p_i = [random.randrange(0,2), random.randrange(0,5), random.randrange(0,5)]
+        # ball_v_i = [random.randrange(-2,0), random.randrange(-5,0),random.randrange(0,5)]
         self.ball_kin = Ball_Kinematics(ball_v_i, ball_p_i)
         self.hit_time = self.ball_kin.compute_time_intersect_x()
 
@@ -91,13 +99,34 @@ class Generator:
         # Create the trajectory segments.  When the simulation first
         # turns on, the robot sags slightly due to it own weight.  So
         # we start with a 2s hold to allow any ringing to die out.
-        self.segments = [
-            Hold(self.ready_state, self.hit_time/4),
-            Goto(self.ready_state, self.fore_hand, self.hit_time/4),
-            Goto(0.0, 1.0, self.hit_time/2, space = "Path"),
-            Goto(1.0, 2.0, 1.0, space = "Path")
-        ]
+        if self.ball_kin.compute_pos(self.hit_time)[0,0] >= 0:
+            self.segments = [
+                Hold(self.ready_state, self.hit_time/4),
+                Goto(self.ready_state, self.fore_hand, self.hit_time/4),
+                Goto(0.0, 1.0,self.hit_time/2, space = "Path")
+                # ,Hold(0.0, 3.0, space= "Path")
+                # ,Goto(1.0, 2.0, 1.0, space = "Path")
+            ]
+            self.p = self.fore_p
+            self.R = self.fore_R
+        else:
+            self.segments = [
+                Hold(self.ready_state, self.hit_time/4),
+                Goto(self.ready_state, self.back_hand, self.hit_time/4),
+                Goto(0.0, 1.0, self.hit_time/2, space = "Path")
+                #,Hold(0.0, 3.0, space= "Path")
 
+            ]
+            self.p = self.back_p
+            self.R = self.back_R
+
+        print(ball_p_i)
+        print(ball_v_i)
+        print(self.hit_time)
+        print(self.ball_kin.compute_pos(self.hit_time))
+        print(self.fore_p)
+        print(self.p)
+        print(self.fore_hand)
         self.lasttheta = theta0
 
         # Initialize/save the parameter.
@@ -115,13 +144,13 @@ class Generator:
     # Path
     def pd(self, s):
         if s <= 1.0:
-            return self.fore_p + (self.ball_kin.compute_pos(self.hit_time) - self.fore_p) * s
+            return self.p + (self.ball_kin.compute_pos(self.hit_time) - self.p) * s
         else:
             return self.ready_p
 
     def vd(self, s, sdot):
         if s <= 1.0:
-            return (self.ball_kin.compute_pos(self.hit_time) - self.fore_p) * sdot
+            return (self.ball_kin.compute_pos(self.hit_time) - self.p) * sdot
         else:
             return np.array([0, 0, 0]).reshape((3, 1))
 
@@ -167,12 +196,16 @@ class Generator:
             # current path variable (from the spline segment).  Then use
             # the above functions to convert to p/R/v/w:
             (s, sdot) = self.segments[self.index].evaluate(t - self.t0)
+            if abs(1 - s) < 0.001 :
+                self.segments.append(Goto(self.lasttheta, self.ready_state, 0.05))
+                print("haha")
+
             pd = self.pd(s)
             Rd = self.Rd(s)
             vd = self.vd(s,sdot)
             wd = self.wd(s,sdot)
 
-            print(pd, Rd, vd, wd)
+            # print(pd, Rd, vd, wd)
 
             # Then start at the last cycle's joint values.
             theta = self.lasttheta
@@ -182,15 +215,24 @@ class Generator:
             (T,J) = self.kin.fkin(theta)
             p     = p_from_T(T)
             R     = R_from_T(T)
-
+            print(s, t)
+            print(p)
+            print(pd)
+            print(theta)
             # Stack the linear and rotation reference velocities (summing
             # the desired velocities and scaled errors)
             xrdot = np.vstack((vd + self.lam * self.ep(pd, p),
                                wd + self.lam * self.eR(Rd, R)))
 
+            g = 0.05
+            inv = np.linalg.inv(J.T @ J + g**2 * np.eye(J.shape[1])) @ J.T
+            qsecdot = -0.1* np.array([0.0, 0.0, 2*theta[2][0], 0.0, 2*theta[4][0],2*theta[5][0], 2*theta[6][0]]).reshape(7,1)
+            # qdot = inv @ xrdot + (1 - inv @ J) @ qsecdot
+
             # Take an IK step, using Euler integration to advance the joints.
-            thetadot = np.linalg.pinv(J) @ xrdot
+            thetadot = inv @ xrdot
             theta    = theta + dt * thetadot
+
 
 
         # Save the joint values (to be used next cycle).

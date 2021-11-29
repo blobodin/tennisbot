@@ -9,7 +9,7 @@ class Ball_Kinematics:
         self.a = np.array([0, 0, -9.81]).reshape((3, 1))
 
     def compute_d(self, t):
-        return self.v_i * (t) + 0.5 * self.a * (t)
+        return self.v_i * (t) + 0.5 * self.a * (t**2)
 
     def compute_pos(self, t):
         return self.p_i + self.compute_d(t)
