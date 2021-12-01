@@ -4,6 +4,16 @@
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
   name="8DOF_arm">
+
+
+  <link name="world"/>
+
+  <joint name="worldfixed" type="fixed">
+    <parent link="world"/>
+    <child  link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  
   <link
     name="base_link">
     <inertial>
@@ -85,7 +95,7 @@
     </collision>
   </link>
   <joint
-    name="base_pin"
+    name="theta1"
     type="continuous">
     <origin
       xyz="0 0 0.0698499999999998"
@@ -138,7 +148,7 @@
     </collision>
   </link>
   <joint
-    name="first_link"
+    name="theta2"
     type="continuous">
     <origin
       xyz="0 0.0635 0"
@@ -191,7 +201,7 @@
     </collision>
   </link>
   <joint
-    name="first_pin"
+    name="theta3"
     type="continuous">
     <origin
       xyz="0 -0.094412 0"
@@ -244,7 +254,7 @@
     </collision>
   </link>
   <joint
-    name="second_link"
+    name="theta4"
     type="continuous">
     <origin
       xyz="0.0380999999999999 0 0"
@@ -297,7 +307,7 @@
     </collision>
   </link>
   <joint
-    name="second_pin"
+    name="theta5"
     type="continuous">
     <origin
       xyz="0 -0.094412 0"
@@ -350,7 +360,7 @@
     </collision>
   </link>
   <joint
-    name="third_link"
+    name="theta6"
     type="continuous">
     <origin
       xyz="0.0381 0 0"
@@ -403,7 +413,7 @@
     </collision>
   </link>
   <joint
-    name="tennis_pin"
+    name="theta7"
     type="continuous">
     <origin
       xyz="0 0.094412 0"
@@ -456,7 +466,7 @@
     </collision>
   </link>
   <joint
-    name="tennis_racket"
+    name="theta8"
     type="continuous">
     <origin
       xyz="0 0.0571499999999999 0"
@@ -468,4 +478,508 @@
     <axis
       xyz="0 1 0" />
   </joint>
+  
+  <joint name="final" type="fixed">
+    <parent link="tennis_racket"/>
+    <child  link="tip"/>
+    <origin xyz="0 0.02 0" rpy="0 0 0"/>
+  </joint>
+
+<link name="tip"/>
+  
+    <!-- *************************************************** -->
+  <!-- ****** Building Blocks (Visual AND Inertial) ****** -->
+  <!-- *************************************************** -->
+
+  <!-- *** World-Fixed: Mount 1, Motor 1 *** -->
+
+  <joint name="attach-mount1" type="fixed">
+    <parent link="base_link"/>
+    <child  link="mount1"/>
+  </joint>
+  <link name="mount1">
+    <visual>
+      <origin xyz="0 0 0.0698499999999998" rpy="0 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0.0698499999999998" rpy="0 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor1" type="fixed">
+    <parent link="base_link"/>
+    <child  link="motor1"/>
+  </joint>
+  <link name="motor1">
+    <visual>
+      <origin xyz="0 0 0.0698499999999998" rpy="0 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0.0698499999999998" rpy="0 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+  
+  <!-- *** Mount 2, Motor 2 *** -->
+
+  <joint name="attach-mount2" type="fixed">
+    <parent link="base_pin"/>
+    <child  link="mount2"/>
+  </joint>
+  <link name="mount2">
+    <visual>
+      <origin xyz="0 0.0635 0" rpy="0 0 1.5708"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.0635 0" rpy="0 0 1.5708"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor2" type="fixed">
+    <parent link="base_pin"/>
+    <child  link="motor2"/>
+  </joint>
+  <link name="motor2">
+    <visual>
+      <origin xyz="0 0.0635 0" rpy="0 0 1.5708"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.0635 0" rpy="0 0 1.5708"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+  
+    <!-- *** Mount 3, Motor 3 *** -->
+
+  <joint name="attach-mount3" type="fixed">
+    <parent link="first_link"/>
+    <child  link="mount3"/>
+  </joint>
+  <link name="mount3">
+    <visual>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor3" type="fixed">
+    <parent link="first_link"/>
+    <child  link="motor3"/>
+  </joint>
+  <link name="motor3">
+    <visual>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+  
+<!-- *** Mount 4, Motor 4 *** -->
+
+  <joint name="attach-mount4" type="fixed">
+    <parent link="first_pin"/>
+    <child  link="mount4"/>
+  </joint>
+  <link name="mount4">
+    <visual>
+      <origin xyz="0.0380999999999999 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0.0380999999999999 0 0" rpy="1.5708 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor4" type="fixed">
+    <parent link="first_pin"/>
+    <child  link="motor4"/>
+  </joint>
+  <link name="motor4">
+    <visual>
+      <origin xyz="0.0380999999999999 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0.0380999999999999 0 0" rpy="1.5708 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+  
+  <!-- *** Mount 5, Motor 5 *** -->
+
+  <joint name="attach-mount5" type="fixed">
+    <parent link="second_link"/>
+    <child  link="mount5"/>
+  </joint>
+  <link name="mount5">
+    <visual>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor5" type="fixed">
+    <parent link="second_link"/>
+    <child  link="motor5"/>
+  </joint>
+  <link name="motor5">
+    <visual>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+  
+    <!-- *** Mount 6, Motor 6 *** -->
+
+  <joint name="attach-mount6" type="fixed">
+    <parent link="second_pin"/>
+    <child  link="mount6"/>
+  </joint>
+  <link name="mount6">
+    <visual>
+      <origin xyz="0.0381 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0.0381 0 0" rpy="1.5708 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor6" type="fixed">
+    <parent link="second_pin"/>
+    <child  link="motor6"/>
+  </joint>
+  <link name="motor6">
+    <visual>
+      <origin xyz="0.0381 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0.0381 0 0" rpy="1.5708 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+  
+<!-- *** Mount 7, Motor 7 *** -->
+
+  <joint name="attach-mount7" type="fixed">
+    <parent link="third_link"/>
+    <child  link="mount7"/>
+  </joint>
+  <link name="mount7">
+    <visual>
+      <origin xyz="0 0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor7" type="fixed">
+    <parent link="third_link"/>
+    <child  link="motor7"/>
+  </joint>
+  <link name="motor7">
+    <visual>
+      <origin xyz="0 0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+  
+  <!-- *** Mount 8, Motor 8 *** -->
+
+  <joint name="attach-mount8" type="fixed">
+    <parent link="tennis_pin"/>
+    <child  link="mount8"/>
+  </joint>
+  <link name="mount8">
+    <visual>
+      <origin xyz="0 0.0571499999999999 0" rpy="0 1.5708 0"/>
+      <geometry>
+	<cylinder length="0.1" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.0571499999999999 0" rpy="0 1.5708 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor8" type="fixed">
+    <parent link="tennis_pin"/>
+    <child  link="motor8"/>
+  </joint>
+  <link name="motor8">
+    <visual>
+      <origin xyz="0 0.0571499999999999 0" rpy="0 1.5708 0"/>
+      <geometry>
+	<cylinder length="0.1" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.0571499999999999 0" rpy="0 1.5708 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+  
+    <!-- *************************************************** -->
+  <!-- ******************* Gazebo Colors ***************** -->
+  <!-- *************************************************** -->
+
+  <gazebo reference="motor1"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor2"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor3"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor4"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor5"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor6"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor7"> <material>Gazebo/Gray</material>  </gazebo>
+
+  <gazebo reference="mount1">   <material>Gazebo/Black</material> </gazebo>
+  <gazebo reference="mount2">   <material>Gazebo/Black</material> </gazebo>
+  <gazebo reference="mount3">   <material>Gazebo/Black</material> </gazebo>
+  <gazebo reference="mount4">   <material>Gazebo/Black</material> </gazebo>
+  <gazebo reference="mount5">   <material>Gazebo/Black</material> </gazebo>
+  <gazebo reference="mount6">   <material>Gazebo/Black</material> </gazebo>
+  
+    <!-- *************************************************** -->
+  <!-- ************** Gazebo Transmissions *************** -->
+  <!-- *************************************************** -->
+
+  <transmission name="trans1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  
+  <transmission name="trans2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta2">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  
+  <transmission name="trans3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta3">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor3">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  
+  <transmission name="trans4">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta4">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor4">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  
+  <transmission name="trans5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta5">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor5">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  
+  <transmission name="trans6">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta6">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor6">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  
+  <transmission name="trans7">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta7">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor7">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  
+<transmission name="trans8">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta8">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor8">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+</transmission>
+
+  
+  <!-- *************************************************** -->
+  <!-- *************** Gazebo Controllers **************** -->
+  <!-- *************************************************** -->
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/sevendof</robotNamespace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+    </plugin>
+  </gazebo>
+  
 </robot>
