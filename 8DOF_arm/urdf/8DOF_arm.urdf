@@ -44,15 +44,6 @@
           rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://8DOF_arm/meshes/base_link.STL" />
-      </geometry>
-    </collision>
   </link>
   <link
     name="base_pin">
@@ -84,15 +75,6 @@
           rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://8DOF_arm/meshes/base_pin.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="theta1"
@@ -137,15 +119,6 @@
           rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://8DOF_arm/meshes/first_link.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="theta2"
@@ -190,15 +163,6 @@
           rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://8DOF_arm/meshes/first_pin.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="theta3"
@@ -243,15 +207,6 @@
           rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://8DOF_arm/meshes/second_link.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="theta4"
@@ -296,15 +251,6 @@
           rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://8DOF_arm/meshes/second_pin.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="theta5"
@@ -349,15 +295,6 @@
           rgba="0.38824 0.4 0.85882 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://8DOF_arm/meshes/third_link.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="theta6"
@@ -402,15 +339,6 @@
           rgba="0.38824 0.4 0.85882 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://8DOF_arm/meshes/tennis_pin.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="theta7"
@@ -455,15 +383,6 @@
           rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://8DOF_arm/meshes/tennis_racket.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="theta8"
