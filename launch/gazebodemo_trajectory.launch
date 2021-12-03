@@ -1,6 +1,6 @@
 <launch>
   <!-- Start Gazebo with the robot under PD control. -->
-  <include file="$(find tennisbot)/launch/gazebo_tennis_dynamic_pdcontrolled.launch"/>
+  <include file="$(find tennisbot)/launch/gazebo_seven_dynamic_pd.launch"/>
 
   <!-- Start the trajectory demo -->
   <node pkg ="tennisbot"

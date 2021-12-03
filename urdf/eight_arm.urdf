@@ -1,0 +1,1004 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com)
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="eight_arm">
+
+
+  <link name="world"/>
+
+  <joint name="worldfixed" type="fixed">
+    <parent link="world"/>
+    <child  link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="7.01981621351124E-19 7.30091750501839E-18 0.0322476251952913"
+        rpy="0 0 0" />
+      <mass
+        value="0.642659334578088" />
+      <inertia
+        ixx="0.00128323309798019"
+        ixy="-5.79102308821978E-20"
+        ixz="-1.24304284116364E-22"
+        iyy="0.00128323309798019"
+        iyz="9.24581334581879E-20"
+        izz="0.0014380231118093" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="base_pin">
+    <inertial>
+      <origin
+        xyz="-2.37440803027089E-15 0.0382952489796256 2.70140680659771E-16"
+        rpy="0 0 0" />
+      <mass
+        value="0.0389102114458838" />
+      <inertia
+        ixx="2.07768422807742E-05"
+        ixy="-6.89483633050152E-22"
+        ixz="-8.37747101928375E-23"
+        iyy="3.6324844996756E-06"
+        iyz="2.21684945430942E-21"
+        izz="2.09173954351496E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/base_pin.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/base_pin.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="theta1"
+    type="continuous">
+    <origin
+      xyz="0 0 0.0698499999999998"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="base_pin" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="first_link">
+    <inertial>
+      <origin
+        xyz="-4.08292269085367E-09 -0.0550901722119836 2.09780265891524E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.209590237829908" />
+      <inertia
+        ixx="0.000233815998884336"
+        ixy="-6.41201289500509E-11"
+        ixz="1.39710741372473E-09"
+        iyy="9.29557212780078E-05"
+        iyz="-6.93854355170575E-08"
+        izz="0.000240744791848488" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/first_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/first_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="theta2"
+    type="continuous">
+    <origin
+      xyz="0 0.0635 0"
+      rpy="1.5707963267949 1.5707963267949 0" />
+    <parent
+      link="base_pin" />
+    <child
+      link="first_link" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="first_pin">
+    <inertial>
+      <origin
+        xyz="0.025545876062429 -2.28292906086932E-15 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.0260398414768073" />
+      <inertia
+        ixx="2.59455351351942E-06"
+        ixy="1.39685737648696E-21"
+        ixz="-1.42378986672845E-21"
+        iyy="7.10750707409668E-06"
+        iyz="-2.42852814127492E-22"
+        izz="6.96695391972137E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/first_pin.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/first_pin.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="theta3"
+    type="continuous">
+    <origin
+      xyz="0 -0.094412 0"
+      rpy="0 0 -1.5708" />
+    <parent
+      link="first_link" />
+    <child
+      link="first_pin" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="second_link">
+    <inertial>
+      <origin
+        xyz="-4.08292010696858E-09 -0.0550901722119811 2.09780265891801E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.209590237829908" />
+      <inertia
+        ixx="0.000233815998884336"
+        ixy="-6.41201288853313E-11"
+        ixz="1.39710741373865E-09"
+        iyy="9.29557212780078E-05"
+        iyz="-6.93854355169687E-08"
+        izz="0.000240744791848488" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/second_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/second_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="theta4"
+    type="continuous">
+    <origin
+      xyz="0.0380999999999999 0 0"
+      rpy="1.5707963267949 0 -1.5707963267949" />
+    <parent
+      link="first_pin" />
+    <child
+      link="second_link" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="second_pin">
+    <inertial>
+      <origin
+        xyz="0.025545876062429 0 -2.33354162788721E-15"
+        rpy="0 0 0" />
+      <mass
+        value="0.0260398414768073" />
+      <inertia
+        ixx="2.59455351351943E-06"
+        ixy="1.0021604189718E-21"
+        ixz="-2.85175925370698E-22"
+        iyy="7.10750707409667E-06"
+        iyz="5.83761034000549E-23"
+        izz="6.96695391972135E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/second_pin.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.388235294117647 0.4 0.858823529411765 0.3" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/second_pin.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="theta5"
+    type="continuous">
+    <origin
+      xyz="0 -0.094412 0"
+      rpy="1.5708 0 -1.5708" />
+    <parent
+      link="second_link" />
+    <child
+      link="second_pin" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="third_link">
+    <inertial>
+      <origin
+        xyz="-4.0829E-09 0.05509 -2.0978E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.20959" />
+      <inertia
+        ixx="0.00023382"
+        ixy="6.412E-11"
+        ixz="-1.3971E-09"
+        iyy="9.2956E-05"
+        iyz="-6.9385E-08"
+        izz="0.00024074" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/third_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.38824 0.4 0.85882 0.3" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/third_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="theta6"
+    type="continuous">
+    <origin
+      xyz="0.0381 0 0"
+      rpy="1.5707963267949 0 -1.5707963267949" />
+    <parent
+      link="second_pin" />
+    <child
+      link="third_link" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="tennis_pin">
+    <inertial>
+      <origin
+        xyz="0 0.033201 -2.7756E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.035752" />
+      <inertia
+        ixx="1.378E-05"
+        ixy="1.1705E-21"
+        ixz="6.5644E-22"
+        iyy="8.2428E-06"
+        iyz="3.6051E-21"
+        izz="1.8417E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/tennis_pin.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.38824 0.4 0.85882 0.3" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/tennis_pin.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="theta7"
+    type="continuous">
+    <origin
+      xyz="0 0.094412 0"
+      rpy="0 1.5708 0" />
+    <parent
+      link="third_link" />
+    <child
+      link="tennis_pin" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="tennis_racket">
+    <inertial>
+      <origin
+        xyz="0.366359357987308 -1.49720355002714E-08 0.0155192883141906"
+        rpy="0 0 0" />
+      <mass
+        value="2.70157890421177" />
+      <inertia
+        ixx="0.0145954644076415"
+        ixy="-9.92588746263243E-09"
+        ixz="-0.00108274864307061"
+        iyy="0.059825373112049"
+        iyz="-1.62234246216851E-09"
+        izz="0.0455197680924056" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/tennis_racket.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tennisbot/meshes/tennis_racket.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="theta8"
+    type="continuous">
+    <origin
+      xyz="0 0.0571499999999999 0"
+      rpy="0 -0.661454620295037 1.5707963267949" />
+    <parent
+      link="tennis_pin" />
+    <child
+      link="tennis_racket" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+
+  <joint name="final" type="fixed">
+    <parent link="tennis_racket"/>
+    <child  link="tip"/>
+    <origin xyz="0 0.02 0" rpy="0 0 0"/>
+  </joint>
+
+<link name="tip"/>
+
+<!-- *************************************************** -->
+<!-- ******************* RVIZ Colors ******************* -->
+<!-- *************************************************** -->
+
+<material name="white">    <color rgba="1.00 1.00 1.00 1"/>  </material>
+<material name="gray">     <color rgba="0.60 0.60 0.60 1"/>  </material>
+<material name="table">    <color rgba="0.85 0.77 0.77 1"/>  </material>
+<material name="black">    <color rgba="0.00 0.00 0.00 1"/>  </material>
+
+<material name="red">      <color rgba="1.00 0.00 0.00 1"/>  </material>
+<material name="green">    <color rgba="0.00 1.00 0.00 1"/>  </material>
+<material name="blue">     <color rgba="0.00 0.00 1.00 1"/>  </material>
+
+<material name="cyan">     <color rgba="0.00 1.00 1.00 1"/>  </material>
+<material name="magenta">  <color rgba="1.00 0.00 1.00 1"/>  </material>
+<material name="yellow">   <color rgba="1.00 1.00 0.00 1"/>  </material>
+
+<material name="orange">   <color rgba="1.00 0.65 0.00 1"/>  </material>
+
+    <!-- *************************************************** -->
+  <!-- ****** Building Blocks (Visual AND Inertial) ****** -->
+  <!-- *************************************************** -->
+
+  <!-- *** World-Fixed: Mount 1, Motor 1 *** -->
+
+  <joint name="attach-mount1" type="fixed">
+    <parent link="base_link"/>
+    <child  link="mount1"/>
+  </joint>
+  <link name="mount1">
+    <visual>
+      <origin xyz="0 0 0.0698499999999998" rpy="0 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0.0698499999999998" rpy="0 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor1" type="fixed">
+    <parent link="base_link"/>
+    <child  link="motor1"/>
+  </joint>
+  <link name="motor1">
+    <visual>
+      <origin xyz="0 0 0.0698499999999998" rpy="0 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0.0698499999999998" rpy="0 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+
+  <!-- *** Mount 2, Motor 2 *** -->
+
+  <joint name="attach-mount2" type="fixed">
+    <parent link="base_pin"/>
+    <child  link="mount2"/>
+  </joint>
+  <link name="mount2">
+    <visual>
+      <origin xyz="0 0.0635 0" rpy="0 0 1.5708"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.0635 0" rpy="0 0 1.5708"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor2" type="fixed">
+    <parent link="base_pin"/>
+    <child  link="motor2"/>
+  </joint>
+  <link name="motor2">
+    <visual>
+      <origin xyz="0 0.0635 0" rpy="0 0 1.5708"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.0635 0" rpy="0 0 1.5708"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+
+    <!-- *** Mount 3, Motor 3 *** -->
+
+  <joint name="attach-mount3" type="fixed">
+    <parent link="first_link"/>
+    <child  link="mount3"/>
+  </joint>
+  <link name="mount3">
+    <visual>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor3" type="fixed">
+    <parent link="first_link"/>
+    <child  link="motor3"/>
+  </joint>
+  <link name="motor3">
+    <visual>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+
+<!-- *** Mount 4, Motor 4 *** -->
+
+  <joint name="attach-mount4" type="fixed">
+    <parent link="first_pin"/>
+    <child  link="mount4"/>
+  </joint>
+  <link name="mount4">
+    <visual>
+      <origin xyz="0.0380999999999999 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0.0380999999999999 0 0" rpy="1.5708 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor4" type="fixed">
+    <parent link="first_pin"/>
+    <child  link="motor4"/>
+  </joint>
+  <link name="motor4">
+    <visual>
+      <origin xyz="0.0380999999999999 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0.0380999999999999 0 0" rpy="1.5708 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+
+  <!-- *** Mount 5, Motor 5 *** -->
+
+  <joint name="attach-mount5" type="fixed">
+    <parent link="second_link"/>
+    <child  link="mount5"/>
+  </joint>
+  <link name="mount5">
+    <visual>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor5" type="fixed">
+    <parent link="second_link"/>
+    <child  link="motor5"/>
+  </joint>
+  <link name="motor5">
+    <visual>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 -0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+
+    <!-- *** Mount 6, Motor 6 *** -->
+
+  <joint name="attach-mount6" type="fixed">
+    <parent link="second_pin"/>
+    <child  link="mount6"/>
+  </joint>
+  <link name="mount6">
+    <visual>
+      <origin xyz="0.0381 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0.0381 0 0" rpy="1.5708 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor6" type="fixed">
+    <parent link="second_pin"/>
+    <child  link="motor6"/>
+  </joint>
+  <link name="motor6">
+    <visual>
+      <origin xyz="0.0381 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0.0381 0 0" rpy="1.5708 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+
+<!-- *** Mount 7, Motor 7 *** -->
+
+  <joint name="attach-mount7" type="fixed">
+    <parent link="third_link"/>
+    <child  link="mount7"/>
+  </joint>
+  <link name="mount7">
+    <visual>
+      <origin xyz="0 0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor7" type="fixed">
+    <parent link="third_link"/>
+    <child  link="motor7"/>
+  </joint>
+  <link name="motor7">
+    <visual>
+      <origin xyz="0 0.094412 0" rpy="1.5708 0 0"/>
+      <geometry>
+	<cylinder length="0.02" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.094412 0" rpy="1.5708 0 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+
+  <!-- *** Mount 8, Motor 8 *** -->
+
+  <joint name="attach-mount8" type="fixed">
+    <parent link="tennis_pin"/>
+    <child  link="mount8"/>
+  </joint>
+  <link name="mount8">
+    <visual>
+      <origin xyz="0 0.0571499999999999 0" rpy="0 1.5708 0"/>
+      <geometry>
+	<cylinder length="0.1" radius="0.002"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.0571499999999999 0" rpy="0 1.5708 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.000687" ixy="0.0" ixz="0.0"
+        iyy="0.000687" iyz="0.0"
+        izz="0.000040"/>
+    </inertial>
+  </link>
+
+  <joint name="attach-motor8" type="fixed">
+    <parent link="tennis_pin"/>
+    <child  link="motor8"/>
+  </joint>
+  <link name="motor8">
+    <visual>
+      <origin xyz="0 0.0571499999999999 0" rpy="0 1.5708 0"/>
+      <geometry>
+	<cylinder length="0.1" radius="0.005"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.0571499999999999 0" rpy="0 1.5708 0"/>
+      <mass value="2.0"/>
+      <inertia
+        ixx="0.007917" ixy="0.0" ixz="0.0"
+        iyy="0.007917" iyz="0.0"
+        izz="0.002500"/>
+    </inertial>
+  </link>
+
+    <!-- *************************************************** -->
+  <!-- ******************* Gazebo Colors ***************** -->
+  <!-- *************************************************** -->
+
+  <gazebo reference="motor1"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor2"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor3"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor4"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor5"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor6"> <material>Gazebo/Gray</material>  </gazebo>
+  <gazebo reference="motor7"> <material>Gazebo/Gray</material>  </gazebo>
+
+  <gazebo reference="mount1">   <material>Gazebo/Black</material> </gazebo>
+  <gazebo reference="mount2">   <material>Gazebo/Black</material> </gazebo>
+  <gazebo reference="mount3">   <material>Gazebo/Black</material> </gazebo>
+  <gazebo reference="mount4">   <material>Gazebo/Black</material> </gazebo>
+  <gazebo reference="mount5">   <material>Gazebo/Black</material> </gazebo>
+  <gazebo reference="mount6">   <material>Gazebo/Black</material> </gazebo>
+
+    <!-- *************************************************** -->
+  <!-- ************** Gazebo Transmissions *************** -->
+  <!-- *************************************************** -->
+
+  <transmission name="trans1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta2">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta3">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor3">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans4">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta4">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor4">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta5">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor5">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans6">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta6">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor6">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans7">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta7">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor7">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+
+<transmission name="trans8">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="theta8">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor8">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+</transmission>
+
+
+  <!-- *************************************************** -->
+  <!-- *************** Gazebo Controllers **************** -->
+  <!-- *************************************************** -->
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/eight_arm</robotNamespace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+    </plugin>
+  </gazebo>
+
+</robot>

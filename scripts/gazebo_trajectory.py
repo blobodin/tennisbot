@@ -43,7 +43,7 @@ class Generator:
         self.N    = 7
         self.pubs = []
         for i in range(self.N):
-            topic = "/tennis/j" + str(i+1) + "_pd_control/command"
+            topic = "/seven_arm/j" + str(i+1) + "_pd_control/command"
             self.pubs.append(rospy.Publisher(topic, Float64, queue_size=10))
 
         # # We used to add a short delay to allow the connection to form
@@ -56,7 +56,7 @@ class Generator:
         # but that's appropriate if we don't want to start until we
         # have this information.  Of course, the simulation starts at
         # zero, so we can simply use that information too.
-        msg = rospy.wait_for_message('/tennis/joint_states', JointState);
+        msg = rospy.wait_for_message('/seven_arm/joint_states', JointState);
         theta0 = np.array(msg.position).reshape((-1,1))
         rospy.loginfo("Gazebo's starting position: %s", str(theta0.T))
 
@@ -73,7 +73,7 @@ class Generator:
         self.ready_R = R_from_T(T)
 
         # Set the fore hand state
-        self.fore_hand = np.array([-(7/8) * np.pi, 0.0, -np.pi/2, np.pi/4, np.pi/4, np.pi/4, np.pi/4]).reshape((7,1))
+        self.fore_hand = np.array([-np.pi, 0.0, -np.pi/2, np.pi/4, np.pi/4, np.pi/4, np.pi/4]).reshape((7,1))
         (T,J) = self.kin.fkin(self.fore_hand)
         self.fore_p = p_from_T(T)
         self.fore_R = R_from_T(T)
@@ -89,6 +89,7 @@ class Generator:
         ball_v_i = [0, -5, 4.5]
         # ball_p_i = [random.randrange(0,2), random.randrange(0,5), random.randrange(0,5)]
         # ball_v_i = [random.randrange(-2,0), random.randrange(-5,0),random.randrange(0,5)]
+
         self.ball_kin = Ball_Kinematics(ball_v_i, ball_p_i)
         self.hit_time = self.ball_kin.compute_time_intersect_x()
 
@@ -102,8 +103,9 @@ class Generator:
         if self.ball_kin.compute_pos(self.hit_time)[0,0] >= 0:
             self.segments = [
                 Hold(self.ready_state, self.hit_time/4),
-                Goto(self.ready_state, self.fore_hand, self.hit_time/4),
-                Goto(0.0, 1.0,self.hit_time/2, space = "Path")
+                Goto(self.ready_state, self.fore_hand, self.hit_time/2),
+                CubicSpline(0.0, 0.0, 1.0, 5.0, self.hit_time/4, space='Path')
+                # Goto(0.0, 1.0, self.hit_time/3, space = "Path")
                 # ,Hold(0.0, 3.0, space= "Path")
                 # ,Goto(1.0, 2.0, 1.0, space = "Path")
             ]
@@ -111,22 +113,15 @@ class Generator:
             self.R = self.fore_R
         else:
             self.segments = [
-                Hold(self.ready_state, self.hit_time/4),
-                Goto(self.ready_state, self.back_hand, self.hit_time/4),
-                Goto(0.0, 1.0, self.hit_time/2, space = "Path")
+                Hold(self.ready_state, self.hit_time/3),
+                Goto(self.ready_state, self.back_hand, self.hit_time/3),
+                Goto(0.0, 1.0, self.hit_time/3, space = "Path")
                 #,Hold(0.0, 3.0, space= "Path")
 
             ]
             self.p = self.back_p
             self.R = self.back_R
 
-        print(ball_p_i)
-        print(ball_v_i)
-        print(self.hit_time)
-        print(self.ball_kin.compute_pos(self.hit_time))
-        print(self.fore_p)
-        print(self.p)
-        print(self.fore_hand)
         self.lasttheta = theta0
 
         # Initialize/save the parameter.
@@ -196,16 +191,13 @@ class Generator:
             # current path variable (from the spline segment).  Then use
             # the above functions to convert to p/R/v/w:
             (s, sdot) = self.segments[self.index].evaluate(t - self.t0)
-            if abs(1 - s) < 0.001 :
-                self.segments.append(Goto(self.lasttheta, self.ready_state, 0.05))
-                print("haha")
+            # if abs(1 - s) < 0.001 :
+            #     self.segments.append(Goto(self.lasttheta, self.ready_state, self.hit_time/3))
 
             pd = self.pd(s)
             Rd = self.Rd(s)
             vd = self.vd(s,sdot)
             wd = self.wd(s,sdot)
-
-            # print(pd, Rd, vd, wd)
 
             # Then start at the last cycle's joint values.
             theta = self.lasttheta
@@ -215,10 +207,7 @@ class Generator:
             (T,J) = self.kin.fkin(theta)
             p     = p_from_T(T)
             R     = R_from_T(T)
-            print(s, t)
-            print(p)
-            print(pd)
-            print(theta)
+
             # Stack the linear and rotation reference velocities (summing
             # the desired velocities and scaled errors)
             xrdot = np.vstack((vd + self.lam * self.ep(pd, p),

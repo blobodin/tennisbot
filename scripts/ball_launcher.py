@@ -12,7 +12,7 @@ def delete_ball():
 def spawn_ball(init_pos):
     # Adding a model
     spawn_model = rospy.ServiceProxy("gazebo/spawn_sdf_model", SpawnModel)
-    with open("/home/robot/133ws/src/packages/tennisbot/models/tennisball/model.sdf", "r") as f:
+    with open("/home/beau/Desktop/Caltech/Senior/Fall/me133a/133ws/src/tennisbot/models/tennisball/model.sdf", "r") as f:
         product_xml = f.read()
 
     item_name = "tennisball"
