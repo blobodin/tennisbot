@@ -1,7 +1,7 @@
 <launch>
   <!-- Define general parameters.  These can be overwritten by the
        roslaunch command line. -->
-  <arg name="urdf"  default="tennis.urdf"/>
+  <arg name="urdf"  default="eight_arm_quasistatic.urdf"/>
   <arg name="model" default="$(find tennisbot)/urdf/$(arg urdf)"/>
   <arg name="cfg"   default="$(find tennisbot)/rviz/viewurdf.rviz" />
 

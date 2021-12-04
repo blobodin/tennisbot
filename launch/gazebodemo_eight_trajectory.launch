@@ -1,0 +1,13 @@
+<launch>
+  <!-- Start Gazebo with the robot under PD control. -->
+  <include file="$(find tennisbot)/launch/gazebo_eight_quasistatic.launch"/>
+
+  <!-- Start the trajectory demo -->
+  <node pkg ="tennisbot"
+  	type="gazebo_eight_trajectory.py"
+	name="trajectory"
+	output="screen"
+	required="true">
+  </node>
+
+</launch>
