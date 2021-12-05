@@ -3,7 +3,7 @@
      Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
-  name="eight_arm">
+  name="eight_arm_quasistatic">
 
 
   <link name="world"/>
@@ -485,7 +485,7 @@
     <origin xyz="0.4 0.02 0" rpy="0 0 0"/>
   </joint>
 
-<link name="tip"/>
+  <link name="tip"/>
 
 <!-- *************************************************** -->
 <!-- ******************* RVIZ Colors ******************* -->
@@ -996,7 +996,7 @@
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-      <robotNamespace>/eight_arm</robotNamespace>
+      <robotNamespace>/eight_arm_quasistatic</robotNamespace>
       <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
     </plugin>
   </gazebo>

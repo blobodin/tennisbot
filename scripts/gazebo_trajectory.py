@@ -31,6 +31,8 @@ from splines import  CubicSpline, Goto, Hold, Stay, QuinticSpline, Goto5
 from ball_launcher import *
 from ball_kinematics import Ball_Kinematics
 
+# Import ball swing helper class
+from swing_helper import Swing_Helper
 #
 #  Generator Class
 #
@@ -92,6 +94,7 @@ class Generator:
 
         self.ball_kin = Ball_Kinematics(ball_v_i, ball_p_i)
         self.hit_time = self.ball_kin.compute_time_intersect_x()
+        self.hit_point = self.ball_kin.compute_pos(self.hit_time)
 
         delete_ball()
         spawn_ball(ball_p_i)
@@ -100,12 +103,12 @@ class Generator:
         # Create the trajectory segments.  When the simulation first
         # turns on, the robot sags slightly due to it own weight.  So
         # we start with a 2s hold to allow any ringing to die out.
-        if self.ball_kin.compute_pos(self.hit_time)[0,0] >= 0:
+        if self.hit_point[0,0] >= 0:
             self.segments = [
-                Hold(self.ready_state, self.hit_time/4),
-                Goto(self.ready_state, self.fore_hand, self.hit_time/2),
-                CubicSpline(0.0, 0.0, 1.0, 5.0, self.hit_time/4, space='Path')
-                # Goto(0.0, 1.0, self.hit_time/3, space = "Path")
+                Hold(self.ready_state, self.hit_time * (4/9)),
+                Goto(self.ready_state, self.fore_hand, self.hit_time * (4/9)),
+                # CubicSpline(0.0, 0.0, 1.0, 10.0, self.hit_time/4, space='Path')
+                Goto(0.0, 1.0, self.hit_time * (2/9), space = "Path")
                 # ,Hold(0.0, 3.0, space= "Path")
                 # ,Goto(1.0, 2.0, 1.0, space = "Path")
             ]
@@ -113,15 +116,17 @@ class Generator:
             self.R = self.fore_R
         else:
             self.segments = [
-                Hold(self.ready_state, self.hit_time/3),
-                Goto(self.ready_state, self.back_hand, self.hit_time/3),
-                Goto(0.0, 1.0, self.hit_time/3, space = "Path")
-                #,Hold(0.0, 3.0, space= "Path")
-
+                Hold(self.ready_state, self.hit_time * (4/9)),
+                Goto(self.ready_state, self.back_hand, self.hit_time * (4/9)),
+                # CubicSpline(0.0, 0.0, 1.0, 10.0, self.hit_time/4, space='Path')
+                Goto(0.0, 1.0, self.hit_time * (2/9), space = "Path")
+                # ,Hold(0.0, 3.0, space= "Path")
+                # ,Goto(1.0, 2.0, 1.0, space = "Path")
             ]
             self.p = self.back_p
             self.R = self.back_R
 
+        self.swing_helper = Swing_Helper(self.p, self.ready_p, self.hit_point)
         self.lasttheta = theta0
 
         # Initialize/save the parameter.
@@ -138,25 +143,52 @@ class Generator:
 
     # Path
     def pd(self, s):
-        if s <= 1.0:
-            return self.p + (self.ball_kin.compute_pos(self.hit_time) - self.p) * s
-        else:
-            return self.ready_p
+        if s <= 0.5:
+            y_max = self.hit_point[1, 0]
+            y_min = self.p[1, 0]
+            traj_type = "fore/back->hit"
+            yd = (y_max - y_min) * (2 * s) + y_min
+        elif s > 0.5 and s <= 1:
+            y_max = self.ready_p[1, 0]
+            y_min = self.hit_point[1, 0]
+            traj_type = "hit->ready"
+            yd = (y_max - y_min) * (2 * (s - 0.5)) + y_min
+
+        pxyd = self.swing_helper.compute_2d_parabola(yd, traj_type)
+        pd = self.swing_helper.project_onto_plane(pxyd)
+
+        return pd
 
     def vd(self, s, sdot):
         if s <= 1.0:
-            return (self.ball_kin.compute_pos(self.hit_time) - self.p) * sdot
-        else:
-            return np.array([0, 0, 0]).reshape((3, 1))
+            y_max = self.hit_point[1, 0]
+            y_min = self.p[1, 0]
+            a = self.swing_helper.a1
+            xd_dot = 8 * a * (y_max - y_min)**2 * s * sdot + 4 * a * (y_max - y_min) * y_min * sdot
+        elif s > 0.5 and s <= 1:
+            y_max = self.ready_p[1, 0]
+            y_min = self.hit_point[1, 0]
+            a = self.swing_helper.a2
+            xd_dot = 8 * a * (y_max - y_min)**2 * (s - 0.5) * sdot + 4 * a * (y_max - y_min) * y_min * sdot
+
+        yd_dot = 2 * (y_max - y_min) * (sdot)
+        norm_vec = self.swing_helper.norm_vec
+        ref_point = self.swing_helper.ref_point
+
+        zd_dot = -(norm_vec[0, 0] / norm_vec[2, 0]) * xd_dot - (norm_vec[1, 0] / norm_vec[2, 0]) * yd_dot
+        return np.array([xd_dot, yd_dot, zd_dot]).reshape((3, 1))
 
     def Rd(self, s):
-        if s <= 1.0:
-            return np.zeros((3, 3))
+        if s <= 0.5:
+            return Rx(np.pi/4) * (2 * s)
         else:
             return self.ready_R
 
     def wd(self, s, sdot):
-        return np.array([0, 0, 0]).reshape((3, 1))
+        if s <= 0.5:
+            return np.array([np.pi/2 * sdot, 0, 0]).reshape((3, 1))
+        else:
+            return np.array([0, 0, 0]).reshape((3, 1))
 
     # Error functions
     def ep(self, pd, pa):
@@ -173,8 +205,12 @@ class Generator:
         dur = self.segments[self.index].duration()
         if (t - self.t0 >= dur):
             self.t0    = (self.t0    + dur)
-            #self.index = (self.index + 1)                       # not cyclic!
+            # self.index = (self.index + 1)                       # not cyclic!
             self.index = (self.index + 1) % len(self.segments)  # cyclic!
+            if self.index == 0 and len(self.segments) == 3:
+                self.segments.append(Goto(self.lasttheta, self.ready_state, self.hit_time/3))
+                self.index = 3
+
 
         # Check whether we are done with all trajectory segments.
         if (self.index >= len(self.segments)):
@@ -191,7 +227,7 @@ class Generator:
             # current path variable (from the spline segment).  Then use
             # the above functions to convert to p/R/v/w:
             (s, sdot) = self.segments[self.index].evaluate(t - self.t0)
-            # if abs(1 - s) < 0.001 :
+            # if abs(1 - s) < 0.01 :
             #     self.segments.append(Goto(self.lasttheta, self.ready_state, self.hit_time/3))
 
             pd = self.pd(s)

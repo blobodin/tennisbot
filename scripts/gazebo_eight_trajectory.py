@@ -20,6 +20,9 @@ from splines import  CubicSpline, Goto, Hold, Stay, QuinticSpline, Goto5
 from ball_launcher import *
 from ball_kinematics import Ball_Kinematics
 
+# Import ball swing helper class
+from swing_helper import Swing_Helper
+
 #
 #  Generator Class
 #
@@ -32,7 +35,7 @@ class Generator:
         self.N    = 8
         self.pubs = []
         for i in range(self.N):
-            topic = "/eight_arm/j" + str(i+1) + "_setposition/command"
+            topic = "/eight_arm_quasistatic/j" + str(i+1) + "_setposition/command"
             self.pubs.append(rospy.Publisher(topic, Float64, queue_size=10))
 
         # # We used to add a short delay to allow the connection to form
@@ -45,7 +48,7 @@ class Generator:
         # but that's appropriate if we don't want to start until we
         # have this information.  Of course, the simulation starts at
         # zero, so we can simply use that information too.
-        msg = rospy.wait_for_message('/eight_arm/joint_states', JointState);
+        msg = rospy.wait_for_message('/eight_arm_quasistatic/joint_states', JointState);
         theta0 = np.array(msg.position).reshape((-1,1))
         rospy.loginfo("Gazebo's starting position: %s", str(theta0.T))
 
@@ -81,6 +84,7 @@ class Generator:
 
         self.ball_kin = Ball_Kinematics(ball_v_i, ball_p_i)
         self.hit_time = self.ball_kin.compute_time_intersect_x()
+        self.hit_point = self.ball_kin.compute_pos(self.hit_time)
 
         delete_ball()
         spawn_ball(ball_p_i)
@@ -89,12 +93,12 @@ class Generator:
         # Create the trajectory segments.  When the simulation first
         # turns on, the robot sags slightly due to it own weight.  So
         # we start with a 2s hold to allow any ringing to die out.
-        if self.ball_kin.compute_pos(self.hit_time)[0,0] >= 0:
+        if self.hit_point[0,0] >= 0:
             self.segments = [
                 Hold(self.ready_state, self.hit_time/4),
                 Goto(self.ready_state, self.fore_hand, self.hit_time/2),
-                CubicSpline(0.0, 0.0, 1.0, 10.0, self.hit_time/4, space='Path')
-                # Goto(0.0, 1.0, self.hit_time/3, space = "Path")
+                # CubicSpline(0.0, 0.0, 1.0, 10.0, self.hit_time/4, space='Path')
+                Goto(0.0, 1.0, self.hit_time/4, space = "Path")
                 # ,Hold(0.0, 3.0, space= "Path")
                 # ,Goto(1.0, 2.0, 1.0, space = "Path")
             ]
@@ -110,6 +114,15 @@ class Generator:
             ]
             self.p = self.back_p
             self.R = self.back_R
+
+        self.swing_helper = Swing_Helper(self.p, self.ready_p, self.hit_point)
+        print("Back point", self.p)
+        print("Ready point", self.ready_p)
+        print("Hit point", self.hit_point)
+        print(self.swing_helper.a1, self.swing_helper.c1)
+        print(self.swing_helper.a2, self.swing_helper.c2)
+        print(self.swing_helper.norm_vec)
+        print(self.swing_helper.ref_point)
 
         self.lasttheta = theta0
 
@@ -127,20 +140,46 @@ class Generator:
 
     # Path
     def pd(self, s):
-        if s <= 1.0:
-            return self.p + (self.ball_kin.compute_pos(self.hit_time) - self.p) * s
-        else:
-            return self.ready_p
+        if s <= 0.5:
+            y_max = self.hit_point[1, 0]
+            y_min = self.p[1, 0]
+            traj_type = "fore/back->hit"
+            yd = (y_max - y_min) * (2 * s) + y_min
+        elif s > 0.5 and s <= 1:
+            y_max = self.ready_p[1, 0]
+            y_min = self.hit_point[1, 0]
+            traj_type = "hit->ready"
+            yd = (y_max - y_min) * (2 * (s - 0.5)) + y_min
+
+        pxyd = self.swing_helper.compute_2d_parabola(yd, traj_type)
+        pd = self.swing_helper.project_onto_plane(pxyd)
+
+        return pd
 
     def vd(self, s, sdot):
         if s <= 1.0:
-            return (self.ball_kin.compute_pos(self.hit_time) - self.p) * sdot
-        else:
-            return np.array([0, 0, 0]).reshape((3, 1))
+            y_max = self.hit_point[1, 0]
+            y_min = self.p[1, 0]
+            a = self.swing_helper.a1
+            xd_dot = 8 * a * (y_max - y_min)**2 * s * sdot + 4 * a * (y_max - y_min) * y_min * sdot
+        elif s > 0.5 and s <= 1:
+            y_max = self.ready_p[1, 0]
+            y_min = self.hit_point[1, 0]
+            a = self.swing_helper.a2
+            xd_dot = 8 * a * (y_max - y_min)**2 * (s - 0.5) * sdot + 4 * a * (y_max - y_min) * y_min * sdot
+
+        yd_dot = 2 * (y_max - y_min) * (sdot)
+        norm_vec = self.swing_helper.norm_vec
+        ref_point = self.swing_helper.ref_point
+
+        zd_dot = -(norm_vec[0, 0] / norm_vec[2, 0]) * xd_dot - (norm_vec[1, 0] / norm_vec[2, 0]) * yd_dot
+        return np.array([xd_dot, yd_dot, zd_dot]).reshape((3, 1))
 
     def Rd(self, s):
         if s <= 1.0:
-            return np.zeros((3, 3))
+            # return np.zeros((3, 3))
+            # return np.eye(3)
+            return Rz(np.pi)
         else:
             return self.ready_R
 
@@ -180,8 +219,6 @@ class Generator:
             # current path variable (from the spline segment).  Then use
             # the above functions to convert to p/R/v/w:
             (s, sdot) = self.segments[self.index].evaluate(t - self.t0)
-            if abs(1 - s) < 0.1 :
-                self.segments.append(Goto(self.lasttheta, self.ready_state, self.hit_time/3))
 
             pd = self.pd(s)
             Rd = self.Rd(s)
@@ -196,7 +233,11 @@ class Generator:
             (T,J) = self.kin.fkin(theta)
             p     = p_from_T(T)
             R     = R_from_T(T)
-
+            print("Last point")
+            print(p)
+            print("Next desired point and velocity")
+            print(pd)
+            print(vd)
             # Stack the linear and rotation reference velocities (summing
             # the desired velocities and scaled errors)
             xrdot = np.vstack((vd + self.lam * self.ep(pd, p),
@@ -204,9 +245,8 @@ class Generator:
 
             g = 0.05
             inv = np.linalg.inv(J.T @ J + g**2 * np.eye(J.shape[1])) @ J.T
-            qsecdot = -0.1* np.array([0.0, 0.0, 2*theta[2][0], 0.0, 2*theta[4][0],2*theta[5][0], 2*theta[6][0]]).reshape(7,1)
+            # qsecdot = -0.1* np.array([0.0, 0.0, 2*theta[2][0], 0.0, 2*theta[4][0],2*theta[5][0], 2*theta[6][0]]).reshape(7,1)
             # qdot = inv @ xrdot + (1 - inv @ J) @ qsecdot
-
             # Take an IK step, using Euler integration to advance the joints.
             thetadot = inv @ xrdot
             theta    = theta + dt * thetadot

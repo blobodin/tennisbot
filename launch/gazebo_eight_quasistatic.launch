@@ -14,7 +14,7 @@
 
   <!-- The control parameters, stored in the YAML file.  -->
   <arg name="control_parameters"
-       default="$(find tennisbot)/config/eight_arm.yaml"/>
+       default="$(find tennisbot)/config/eight_arm_quasistatic.yaml"/>
 
 
   <!-- Load the URDF into the ROS Parameter Server -->
@@ -41,15 +41,7 @@
 	name="robot_spawner"
 	respawn="false"
 	output="screen"
-	args="-urdf -model eight_arm -param robot_description"/>
-
-  <!-- Service call to gazebo_ros to spawn a beer can model -->
-  <node pkg ="gazebo_ros"
-	type="spawn_model"
-	name="beer_spawner"
-	respawn="false"
-	output="screen"
-	args="-sdf -model beercan -database beer -x 0.0 -y 0.5 -z 0"/>
+	args="-urdf -model eight_arm_quasistatic -param robot_description"/>
 
   <!-- Load the controllers. -->
   <node pkg ="controller_manager"
@@ -57,6 +49,6 @@
 	name="controller_spawner"
 	respawn="false"
 	output="screen"
-	ns="/eight_arm"
+	ns="/eight_arm_quasistatic"
 	args="joint_state_publisher j1_setposition j2_setposition j3_setposition j4_setposition j5_setposition j6_setposition j7_setposition j8_setposition"/>
 </launch>

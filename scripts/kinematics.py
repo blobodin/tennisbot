@@ -179,7 +179,7 @@ class Kinematics:
             if (joint.type == 'fixed'):
                 # Just append the fixed transform
                 T = T @ T_from_URDF_origin(joint.origin)
-                
+
             elif (joint.type == 'continuous'):
                 # First append the fixed transform, then rotating
                 # transform.  The joint angle comes from theta-vector.
@@ -193,9 +193,9 @@ class Kinematics:
                 # the local frame, so multiply by the local R matrix.
                 elist.append(R_from_T(T) @ e_from_URDF_axis(joint.axis))
 
-                # Advanced the "active/moving" joint number 
+                # Advanced the "active/moving" joint number
                 index += 1
-    
+
             elif (joint.type != 'fixed'):
                 # There shouldn't be any other types...
                 rospy.logwarn("Unknown Joint Type: %s", joint.type)
@@ -210,6 +210,27 @@ class Kinematics:
 
         # Return the Ttip and Jacobian (at the end of the chain).
         return (T,J)
+
+    def ikin(self, init, goal, threshold = .05):
+        curr_theta = init
+        dist = None
+
+        # Loop until convergence of tip position
+        while dist == None or dist >= threshold:
+            # Compute the kinematics.
+            (T,J) = self.fkin(curr_theta)
+            # Compute next guess and record
+            new_theta = curr_theta + np.linalg.inv(J[0:3, 0:3]) @ (goal - p_from_T(T))
+            # Compute tip position from theta guess
+            (T,J) = self.fkin(new_theta)
+            tip_pos = p_from_T(T)
+
+            # Compute euclidean distance
+            dist = np.linalg.norm(tip_pos - goal)
+
+            curr_theta = new_theta
+
+        return curr_theta
 
 
 #
