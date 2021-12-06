@@ -81,7 +81,7 @@ class Generator:
         self.fore_R = R_from_T(T)
 
         # Set the back hand state
-        self.back_hand = np.array([1.25, -0.5, 1.5, -np.pi/2, -2.5, -0.75, 0.25]).reshape((7,1))
+        self.back_hand = np.array([1.25, 0.0, 1.25, -np.pi/2, -2.5, -0.25, 0.25]).reshape((7,1))
         (T,J) = self.kin.fkin(self.back_hand)
         self.back_p = p_from_T(T)
         self.back_R = R_from_T(T)
@@ -114,6 +114,8 @@ class Generator:
             ]
             self.p = self.fore_p
             self.R = self.fore_R
+            self.rot = Rx(np.pi/4)
+            self.wrot = np.array([np.pi/2, 0, 0]).reshape((3, 1))
         else:
             self.segments = [
                 Hold(self.ready_state, self.hit_time * (4/9)),
@@ -125,6 +127,9 @@ class Generator:
             ]
             self.p = self.back_p
             self.R = self.back_R
+            self.rot = Rz(-np.pi/2)
+            self.wrot = np.array([0, 0, -np.pi]).reshape((3, 1))
+
 
         self.swing_helper = Swing_Helper(self.p, self.ready_p, self.hit_point)
         self.lasttheta = theta0
@@ -180,13 +185,13 @@ class Generator:
 
     def Rd(self, s):
         if s <= 0.5:
-            return Rx(np.pi/4) * (2 * s)
+            return self.rot * (2 * s)
         else:
             return self.ready_R
 
     def wd(self, s, sdot):
         if s <= 0.5:
-            return np.array([np.pi/2 * sdot, 0, 0]).reshape((3, 1))
+            return self.wrot * sdot
         else:
             return np.array([0, 0, 0]).reshape((3, 1))
 
