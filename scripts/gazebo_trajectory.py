@@ -91,7 +91,7 @@ class Generator:
         self.back_R = R_from_T(T)
 
         # Set launched tennis ball conditions
-        ball_p_i = [-1.05, 5, 0.805]
+        ball_p_i = [-1.0, 5, 1.5]
         ball_v_i = [0, -5, 4.5]
         # ball_p_i = [random.randrange(0,2), random.randrange(0,5), random.randrange(0,5)]
         # ball_v_i = [random.randrange(-2,0), random.randrange(-5,0),random.randrange(0,5)]
@@ -99,6 +99,17 @@ class Generator:
         self.ball_kin = Ball_Kinematics(ball_v_i, ball_p_i)
         self.hit_time = self.ball_kin.compute_time_intersect_x()
         self.hit_point = self.ball_kin.compute_pos(self.hit_time)
+
+        # Adjust hit point to lie inside truncated sphere
+        self.hit_point[2, 0] = max(self.hit_point[2, 0], 0.4)
+
+        center = np.array([0, 0, 0.6]).reshape((3, 1))
+        radius = self.hit_point - center
+        mag = np.linalg.norm(radius)
+        if mag > 1.06:
+            radius = (1.06 / mag) * radius
+            self.hit_point = center + radius
+
         print(self.hit_point, self.fore_p, self.ready_p)
 
         delete_ball()
@@ -119,7 +130,10 @@ class Generator:
             ]
             self.p = self.fore_p
             self.R = self.fore_R
-            self.rot = Rz(-np.pi/2)
+
+            self.rot = Rz(-np.pi/2) @ Rx(np.arctan2(radius[2, 0], radius[0, 0]))
+            print(self.hit_point)
+            print(self.rot)
             self.wrot = np.array([np.pi/4, 0, 0]).reshape((3, 1))
         else:
             self.segments = [
@@ -132,7 +146,9 @@ class Generator:
             ]
             self.p = self.back_p
             self.R = self.back_R
-            self.rot = Rz(np.pi/2)
+            self.rot = Rz(np.pi/2) @ Rx(np.pi - np.arctan2(radius[2, 0], radius[0, 0]))
+            print(self.hit_point)
+            print(self.rot)
             self.wrot = np.array([0, 0, -np.pi/2]).reshape((3, 1))
 
 
