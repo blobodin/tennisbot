@@ -33,6 +33,10 @@ from ball_kinematics import Ball_Kinematics
 
 # Import ball swing helper class
 from swing_helper import Swing_Helper
+
+from scipy.spatial.transform import Rotation
+from scipy.spatial.transform import Slerp
+
 #
 #  Generator Class
 #
@@ -81,13 +85,13 @@ class Generator:
         self.fore_R = R_from_T(T)
 
         # Set the back hand state
-        self.back_hand = np.array([1.25, 0.0, 1.25, -np.pi/2, -2.5, -0.25, 0.25]).reshape((7,1))
+        self.back_hand = np.array([2.0, 0.0, -1.4, 1.28, 1.0, -0.25, 0.25]).reshape((7,1))
         (T,J) = self.kin.fkin(self.back_hand)
         self.back_p = p_from_T(T)
         self.back_R = R_from_T(T)
 
         # Set launched tennis ball conditions
-        ball_p_i = [1.05, 5, 1.005]
+        ball_p_i = [-1.05, 5, 0.805]
         ball_v_i = [0, -5, 4.5]
         # ball_p_i = [random.randrange(0,2), random.randrange(0,5), random.randrange(0,5)]
         # ball_v_i = [random.randrange(-2,0), random.randrange(-5,0),random.randrange(0,5)]
@@ -95,6 +99,7 @@ class Generator:
         self.ball_kin = Ball_Kinematics(ball_v_i, ball_p_i)
         self.hit_time = self.ball_kin.compute_time_intersect_x()
         self.hit_point = self.ball_kin.compute_pos(self.hit_time)
+        print(self.hit_point, self.fore_p, self.ready_p)
 
         delete_ball()
         spawn_ball(ball_p_i)
@@ -114,8 +119,8 @@ class Generator:
             ]
             self.p = self.fore_p
             self.R = self.fore_R
-            self.rot = Rx(np.pi/4)
-            self.wrot = np.array([np.pi/2, 0, 0]).reshape((3, 1))
+            self.rot = Rz(-np.pi/2)
+            self.wrot = np.array([np.pi/4, 0, 0]).reshape((3, 1))
         else:
             self.segments = [
                 Hold(self.ready_state, self.hit_time * (4/9)),
@@ -127,13 +132,19 @@ class Generator:
             ]
             self.p = self.back_p
             self.R = self.back_R
-            self.rot = Rz(-np.pi/2)
-            self.wrot = np.array([0, 0, -np.pi]).reshape((3, 1))
+            self.rot = Rz(np.pi/2)
+            self.wrot = np.array([0, 0, -np.pi/2]).reshape((3, 1))
 
 
         self.swing_helper = Swing_Helper(self.p, self.ready_p, self.hit_point)
         self.lasttheta = theta0
 
+        R_set = Rotation.from_matrix(np.array([self.R, self.rot, self.ready_R]))
+        self.slerp = Slerp([0, 0.5, 1], R_set)
+
+        # print(self.swing_helper.norm_vec, self.swing_helper.ref_point)
+        # print(self.swing_helper.a1, self.swing_helper.c1)
+        # print(self.swing_helper.a2, self.swing_helper.c2)
         # Initialize/save the parameter.
         self.lam = .01
 
@@ -165,7 +176,7 @@ class Generator:
         return pd
 
     def vd(self, s, sdot):
-        if s <= 1.0:
+        if s <= 0.5:
             y_max = self.hit_point[1, 0]
             y_min = self.p[1, 0]
             a = self.swing_helper.a1
@@ -184,16 +195,21 @@ class Generator:
         return np.array([xd_dot, yd_dot, zd_dot]).reshape((3, 1))
 
     def Rd(self, s):
-        if s <= 0.5:
-            return self.rot * (2 * s)
-        else:
-            return self.ready_R
+        return self.slerp([s]).as_matrix()[0]
 
     def wd(self, s, sdot):
-        if s <= 0.5:
-            return self.wrot * sdot
-        else:
-            return np.array([0, 0, 0]).reshape((3, 1))
+        adj = s + 0.05
+        if s + 0.05 > 1:
+            adj = 1
+
+        q2 = self.slerp([adj]).as_quat()[0]
+        q1 = self.slerp([s]).as_quat()[0]
+
+        diff = q2 - q1
+        conj = np.array([q2[0], -q2[1], -q2[2], -q2[3]])
+        vel = np.multiply(((diff * 2) / 0.05), conj)
+
+        return vel[1:].reshape((3, 1))
 
     # Error functions
     def ep(self, pd, pa):
@@ -213,7 +229,7 @@ class Generator:
             # self.index = (self.index + 1)                       # not cyclic!
             self.index = (self.index + 1) % len(self.segments)  # cyclic!
             if self.index == 0 and len(self.segments) == 3:
-                self.segments.append(Goto(self.lasttheta, self.ready_state, self.hit_time/3))
+                self.segments.append(Goto(self.lasttheta, self.ready_state, 0.5))
                 self.index = 3
 
 
@@ -240,6 +256,8 @@ class Generator:
             vd = self.vd(s,sdot)
             wd = self.wd(s,sdot)
 
+            # print("Next position:", pd)
+            # print("Next velocity:", vd)
             # Then start at the last cycle's joint values.
             theta = self.lasttheta
 
@@ -252,7 +270,7 @@ class Generator:
             # Stack the linear and rotation reference velocities (summing
             # the desired velocities and scaled errors)
             xrdot = np.vstack((vd + self.lam * self.ep(pd, p),
-                               wd + self.lam * self.eR(Rd, R)))
+                               wd + 50 * self.eR(Rd, R)))
 
             g = 0.05
             inv = np.linalg.inv(J.T @ J + g**2 * np.eye(J.shape[1])) @ J.T
