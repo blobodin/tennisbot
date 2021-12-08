@@ -91,18 +91,24 @@ class Generator:
         self.back_R = R_from_T(T)
 
         # Set launched tennis ball conditions
-        ball_p_i = [-1.0, 5, 1.5]
+        ball_p_i = [1.0, 5, 1.5]
         ball_v_i = [0, -5, 4.5]
+
+        # Launch ball randomly
         # ball_p_i = [random.randrange(0,2), random.randrange(0,5), random.randrange(0,5)]
         # ball_v_i = [random.randrange(-2,0), random.randrange(-5,0),random.randrange(0,5)]
 
+        # Setup ball kinematics using initial conditions
         self.ball_kin = Ball_Kinematics(ball_v_i, ball_p_i)
         self.hit_time = self.ball_kin.compute_time_intersect_x()
         self.hit_point = self.ball_kin.compute_pos(self.hit_time)
 
-        # Adjust hit point to lie inside truncated sphere
+        # Adjust hit point to lie inside truncated sphere.
+        # First raise it to bottom of truncated sphere if it is too low.
         self.hit_point[2, 0] = max(self.hit_point[2, 0], 0.4)
 
+        # Now rescale such that it lies on the surface of the sphere
+        # if it is too far out
         center = np.array([0, 0, 0.6]).reshape((3, 1))
         radius = self.hit_point - center
         mag = np.linalg.norm(radius)
@@ -110,8 +116,7 @@ class Generator:
             radius = (1.06 / mag) * radius
             self.hit_point = center + radius
 
-        print(self.hit_point, self.fore_p, self.ready_p)
-
+        # Spawn the ball
         delete_ball()
         spawn_ball(ball_p_i)
         launch_ball(ball_p_i, ball_v_i)
@@ -120,47 +125,47 @@ class Generator:
         # turns on, the robot sags slightly due to it own weight.  So
         # we start with a 2s hold to allow any ringing to die out.
         if self.hit_point[0,0] >= 0:
+            # Hold in ready state, move to fore hand position, then swing
             self.segments = [
                 Hold(self.ready_state, self.hit_time * (4/9)),
                 Goto(self.ready_state, self.fore_hand, self.hit_time * (4/9)),
-                # CubicSpline(0.0, 0.0, 1.0, 10.0, self.hit_time/4, space='Path')
                 Goto(0.0, 1.0, self.hit_time * (2/9), space = "Path")
-                # ,Hold(0.0, 3.0, space= "Path")
-                # ,Goto(1.0, 2.0, 1.0, space = "Path")
             ]
+            # Set p and R to forehand p and R for use later
             self.p = self.fore_p
             self.R = self.fore_R
 
+            # Set rotation of paddle at hit point to be parallel to
+            # the xz plane and tilted such that the paddle points
+            # in the same direction at the hit point vector.
             self.rot = Rz(-np.pi/2) @ Rx(np.arctan2(radius[2, 0], radius[0, 0]))
-            print(self.hit_point)
-            print(self.rot)
-            self.wrot = np.array([np.pi/4, 0, 0]).reshape((3, 1))
         else:
+            # Hold in ready state, move to back hand position, then swing
             self.segments = [
                 Hold(self.ready_state, self.hit_time * (4/9)),
                 Goto(self.ready_state, self.back_hand, self.hit_time * (4/9)),
-                # CubicSpline(0.0, 0.0, 1.0, 10.0, self.hit_time/4, space='Path')
                 Goto(0.0, 1.0, self.hit_time * (2/9), space = "Path")
-                # ,Hold(0.0, 3.0, space= "Path")
-                # ,Goto(1.0, 2.0, 1.0, space = "Path")
             ]
+            # Set p and R to backhand p and R for use later
             self.p = self.back_p
             self.R = self.back_R
+
+            # Set rotation of paddle at hit point to be parallel to
+            # the xz plane and tilted such that the paddle points
+            # in the same direction at the hit point vector.
             self.rot = Rz(np.pi/2) @ Rx(np.pi - np.arctan2(radius[2, 0], radius[0, 0]))
-            print(self.hit_point)
-            print(self.rot)
-            self.wrot = np.array([0, 0, -np.pi/2]).reshape((3, 1))
 
-
+        # Setup swing helper for swing trajectories
         self.swing_helper = Swing_Helper(self.p, self.ready_p, self.hit_point)
+
+        # Set lasttheta to the initial theta configuration
         self.lasttheta = theta0
 
+        # Setup a slerp object for the interpolation of our desired
+        # rotation matrices
         R_set = Rotation.from_matrix(np.array([self.R, self.rot, self.ready_R]))
         self.slerp = Slerp([0, 0.5, 1], R_set)
 
-        # print(self.swing_helper.norm_vec, self.swing_helper.ref_point)
-        # print(self.swing_helper.a1, self.swing_helper.c1)
-        # print(self.swing_helper.a2, self.swing_helper.c2)
         # Initialize/save the parameter.
         self.lam = .01
 
@@ -211,6 +216,7 @@ class Generator:
         return np.array([xd_dot, yd_dot, zd_dot]).reshape((3, 1))
 
     def Rd(self, s):
+        # Return rotation matrix that correponds to step s in the interpolation
         return self.slerp([s]).as_matrix()[0]
 
     def wd(self, s, sdot):
@@ -236,6 +242,31 @@ class Generator:
                     np.cross(Ra[:,1:2], Rd[:,1:2], axis=0) +
                     np.cross(Ra[:,2:3], Rd[:,2:3], axis=0))
 
+    def quad_mat(self, triplet):
+        lst = []
+        for i in range(3):
+            lst.append([triplet[i]**2, triplet[i], 1])
+        return np.array(lst).reshape((3, 3))
+
+    def qdot_sec(self, lam, thetas):
+        h = 5
+        y = np.array([h, 0, h]).reshape((3, 1))
+
+        # Shoulder (-pi <= theta3 <= 0)
+        coef3 = np.linalg.pinv(self.quad_mat([-np.pi, -np.pi/2, 0])) @ y
+        qdot_sec3 = -lam * (2 * coef3[0, 0] * thetas[2, 0] + coef3[1, 0])
+
+        # Elbow (0 <= theta4 <= pi)
+        coef4 = np.linalg.pinv(self.quad_mat([0, np.pi/2, np.pi])) @ y
+        qdot_sec4 = -lam * (2 * coef4[0, 0] * thetas[3, 0] + coef4[1, 0])
+
+        # Wrist (-pi/4 <= theta7 <= pi/4)
+        coef7 = np.linalg.pinv(self.quad_mat([-np.pi/4, 0, np.pi/4])) @ y
+        qdot_sec7 = -lam * (2 * coef7[0, 0] * thetas[6, 0] + coef7[1, 0])
+
+        return np.array([0, 0, qdot_sec3, qdot_sec4, 0, 0, qdot_sec7]).reshape((7, 1))
+
+
     # Update is called every 10ms of simulation time!
     def update(self, t, dt):
         # If the current trajectory segment is done, shift to the next.
@@ -244,6 +275,9 @@ class Generator:
             self.t0    = (self.t0    + dur)
             # self.index = (self.index + 1)                       # not cyclic!
             self.index = (self.index + 1) % len(self.segments)  # cyclic!
+
+            # If this is the first time we finish our segments list,
+            # add a reset segment to go back to the ready state.
             if self.index == 0 and len(self.segments) == 3:
                 self.segments.append(Goto(self.lasttheta, self.ready_state, 0.5))
                 self.index = 3
@@ -264,16 +298,12 @@ class Generator:
             # current path variable (from the spline segment).  Then use
             # the above functions to convert to p/R/v/w:
             (s, sdot) = self.segments[self.index].evaluate(t - self.t0)
-            # if abs(1 - s) < 0.01 :
-            #     self.segments.append(Goto(self.lasttheta, self.ready_state, self.hit_time/3))
 
             pd = self.pd(s)
             Rd = self.Rd(s)
             vd = self.vd(s,sdot)
             wd = self.wd(s,sdot)
 
-            # print("Next position:", pd)
-            # print("Next velocity:", vd)
             # Then start at the last cycle's joint values.
             theta = self.lasttheta
 
@@ -285,16 +315,21 @@ class Generator:
 
             # Stack the linear and rotation reference velocities (summing
             # the desired velocities and scaled errors)
+            # Note that we use a larger lambda for the rotation error
             xrdot = np.vstack((vd + self.lam * self.ep(pd, p),
                                wd + 50 * self.eR(Rd, R)))
 
+            # Weighted inverse
             g = 0.05
             inv = np.linalg.inv(J.T @ J + g**2 * np.eye(J.shape[1])) @ J.T
-            qsecdot = -0.1* np.array([0.0, 0.0, 2*theta[2][0], 0.0, 2*theta[4][0],2*theta[5][0], 2*theta[6][0]]).reshape(7,1)
-            # qdot = inv @ xrdot + (1 - inv @ J) @ qsecdot
+
+            # Secondary tasks
+            # qsecdot = -0.1* np.array([0.0, 0.0, 2*theta[2][0], 0.0, 2*theta[4][0],2*theta[5][0], 2*theta[6][0]]).reshape(7,1)
+            qsecdot = self.qdot_sec(.01, theta)
+            thetadot = inv @ xrdot + (1 - inv @ J) @ qsecdot
 
             # Take an IK step, using Euler integration to advance the joints.
-            thetadot = inv @ xrdot
+            # thetadot = inv @ xrdot
             theta    = theta + dt * thetadot
 
 
