@@ -23,6 +23,9 @@ from ball_kinematics import Ball_Kinematics
 # Import ball swing helper class
 from swing_helper import Swing_Helper
 
+from scipy.spatial.transform import Rotation
+from scipy.spatial.transform import Slerp
+
 #
 #  Generator Class
 #
@@ -77,7 +80,7 @@ class Generator:
         self.back_R = R_from_T(T)
 
         # Set launched tennis ball conditions
-        ball_p_i = [0.25, 5, 1.0]
+        ball_p_i = [.75, 5, 1.0]
         ball_v_i = [0, -5, 4.5]
         # ball_p_i = [random.randrange(0,2), random.randrange(0,5), random.randrange(0,5)]
         # ball_v_i = [random.randrange(-2,0), random.randrange(-5,0),random.randrange(0,5)]
@@ -95,12 +98,9 @@ class Generator:
         # we start with a 2s hold to allow any ringing to die out.
         if self.hit_point[0,0] >= 0:
             self.segments = [
-                Hold(self.ready_state, self.hit_time/4),
-                Goto(self.ready_state, self.fore_hand, self.hit_time/2),
-                # CubicSpline(0.0, 0.0, 1.0, 10.0, self.hit_time/4, space='Path')
-                Goto(0.0, 1.0, self.hit_time/4, space = "Path")
-                # ,Hold(0.0, 3.0, space= "Path")
-                # ,Goto(1.0, 2.0, 1.0, space = "Path")
+                Hold(self.ready_state, self.hit_time * (4/9)),
+                Goto(self.ready_state, self.fore_hand, self.hit_time * (4/9)),
+                Goto(0.0, 1.0, self.hit_time * (2/9), space = "Path")
             ]
             self.p = self.fore_p
             self.R = self.fore_R
@@ -179,7 +179,7 @@ class Generator:
         if s <= 1.0:
             # return np.zeros((3, 3))
             # return np.eye(3)
-            return Rz(np.pi)
+            return Rx(np.pi)
         else:
             return self.ready_R
 
@@ -241,7 +241,7 @@ class Generator:
             # Stack the linear and rotation reference velocities (summing
             # the desired velocities and scaled errors)
             xrdot = np.vstack((vd + self.lam * self.ep(pd, p),
-                               wd + self.lam * self.eR(Rd, R)))
+                               wd + 10 * self.eR(Rd, R)))
 
             g = 0.05
             inv = np.linalg.inv(J.T @ J + g**2 * np.eye(J.shape[1])) @ J.T

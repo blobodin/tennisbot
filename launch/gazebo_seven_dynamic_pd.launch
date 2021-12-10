@@ -6,7 +6,7 @@
     <arg name="world_name" default="$(find tennisbot)/worlds/slowtime.world"/>
     <arg name="world_name" default="$(find tennisbot)/worlds/realtime.world"/>
   -->
-  <arg name="paused"     default="true"/>
+  <arg name="paused"     default="false"/>
   <arg name="world_name" default="$(find tennisbot)/worlds/slowtime.world"/>
 
   <!-- URDF file parameter. -->

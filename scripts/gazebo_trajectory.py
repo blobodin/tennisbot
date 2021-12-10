@@ -91,8 +91,34 @@ class Generator:
         self.back_R = R_from_T(T)
 
         # Set launched tennis ball conditions
-        ball_p_i = [1.0, 5, 1.5]
+
+        # Normal forehand normal speed
+        # ball_p_i = [0.80, 5, .9]
+        # ball_v_i = [0, -5, 4.5]
+
+        # Normal backhand normal speed
+        ball_p_i = [-0.80, 5, .9]
         ball_v_i = [0, -5, 4.5]
+
+        # Stretched/high forehand normal speed
+        # ball_p_i = [1.05, 5, 1.5]
+        # ball_v_i = [0, -5, 4.5]
+
+        # Stretched/high backhand normal speed
+        # ball_p_i = [-1.05, 5, 1.5]
+        # ball_v_i = [0, -5, 4.5]
+
+        # Low forehand normal speed
+        # ball_p_i = [0.80, 5, 0.4]
+        # ball_v_i = [0, -5, 4.5]
+
+        # Low backhand normal speed
+        # ball_p_i = [-0.80, 5, 0.5]
+        # ball_v_i = [0, -5, 4.5]
+
+        # Close to body normal speed
+        # ball_p_i = [0.05, 5, 0.9]
+        # ball_v_i = [0, -5, 4.5]
 
         # Launch ball randomly
         # ball_p_i = [random.randrange(0,2), random.randrange(0,5), random.randrange(0,5)]
@@ -105,7 +131,7 @@ class Generator:
 
         # Adjust hit point to lie inside truncated sphere.
         # First raise it to bottom of truncated sphere if it is too low.
-        self.hit_point[2, 0] = max(self.hit_point[2, 0], 0.4)
+        self.hit_point[2, 0] = max(self.hit_point[2, 0], 0.26)
 
         # Now rescale such that it lies on the surface of the sphere
         # if it is too far out
@@ -120,6 +146,8 @@ class Generator:
         delete_ball()
         spawn_ball(ball_p_i)
         launch_ball(ball_p_i, ball_v_i)
+
+        print(self.hit_time)
 
         # Create the trajectory segments.  When the simulation first
         # turns on, the robot sags slightly due to it own weight.  So
@@ -144,6 +172,7 @@ class Generator:
             self.segments = [
                 Hold(self.ready_state, self.hit_time * (4/9)),
                 Goto(self.ready_state, self.back_hand, self.hit_time * (4/9)),
+                Hold(self.back_hand, self.hit_time * (4/9)),
                 Goto(0.0, 1.0, self.hit_time * (2/9), space = "Path")
             ]
             # Set p and R to backhand p and R for use later
@@ -242,29 +271,28 @@ class Generator:
                     np.cross(Ra[:,1:2], Rd[:,1:2], axis=0) +
                     np.cross(Ra[:,2:3], Rd[:,2:3], axis=0))
 
-    def quad_mat(self, triplet):
-        lst = []
-        for i in range(3):
-            lst.append([triplet[i]**2, triplet[i], 1])
-        return np.array(lst).reshape((3, 3))
-
     def qdot_sec(self, lam, thetas):
-        h = 5
-        y = np.array([h, 0, h]).reshape((3, 1))
+        a1 = 1
+        a2 = 1
+        a3 = 4
 
         # Shoulder (-pi <= theta3 <= 0)
-        coef3 = np.linalg.pinv(self.quad_mat([-np.pi, -np.pi/2, 0])) @ y
-        qdot_sec3 = -lam * (2 * coef3[0, 0] * thetas[2, 0] + coef3[1, 0])
+        qdot_sec3 = -lam * 2 * a1 * (thetas[2, 0] + np.pi/2)
 
         # Elbow (0 <= theta4 <= pi)
-        coef4 = np.linalg.pinv(self.quad_mat([0, np.pi/2, np.pi])) @ y
-        qdot_sec4 = -lam * (2 * coef4[0, 0] * thetas[3, 0] + coef4[1, 0])
+        qdot_sec4 = -lam * 2 * a2 * (thetas[3, 0] - np.pi/2)
 
         # Wrist (-pi/4 <= theta7 <= pi/4)
-        coef7 = np.linalg.pinv(self.quad_mat([-np.pi/4, 0, np.pi/4])) @ y
-        qdot_sec7 = -lam * (2 * coef7[0, 0] * thetas[6, 0] + coef7[1, 0])
+        qdot_sec7 = -lam * 2 * a3 * (thetas[6, 0])
 
-        return np.array([0, 0, qdot_sec3, qdot_sec4, 0, 0, qdot_sec7]).reshape((7, 1))
+        bound_qdotsec = np.array([0, 0, qdot_sec3, qdot_sec4, 0, 0, qdot_sec7]).reshape((7, 1))
+
+        # Minimize torque
+        center    = [0.0, 0.0, 0.0, np.pi/2, 0.0, 0.0, 0.0]
+        center    = np.array(center).reshape((-1,1))
+        tor_qdotsec = - lam * (thetas - center)
+
+        return bound_qdotsec + tor_qdotsec
 
 
     # Update is called every 10ms of simulation time!
@@ -272,6 +300,7 @@ class Generator:
         # If the current trajectory segment is done, shift to the next.
         dur = self.segments[self.index].duration()
         if (t - self.t0 >= dur):
+            print("Segment change time:", t)
             self.t0    = (self.t0    + dur)
             # self.index = (self.index + 1)                       # not cyclic!
             self.index = (self.index + 1) % len(self.segments)  # cyclic!
@@ -324,7 +353,6 @@ class Generator:
             inv = np.linalg.inv(J.T @ J + g**2 * np.eye(J.shape[1])) @ J.T
 
             # Secondary tasks
-            # qsecdot = -0.1* np.array([0.0, 0.0, 2*theta[2][0], 0.0, 2*theta[4][0],2*theta[5][0], 2*theta[6][0]]).reshape(7,1)
             qsecdot = self.qdot_sec(.01, theta)
             thetadot = inv @ xrdot + (1 - inv @ J) @ qsecdot
 

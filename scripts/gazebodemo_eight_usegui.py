@@ -32,7 +32,7 @@ class Generator:
         self.pubs = []
         for i in range(self.N):
             # topic = "/eight_arm/j" + str(i+1) + "_pd_control/command"
-            topic = "/eight_arm/j" + str(i+1) + "_setposition/command"
+            topic = "/eight_arm_quasistatic/j" + str(i+1) + "_setposition/command"
             self.pubs.append(rospy.Publisher(topic, Float64, queue_size=10))
 
         # # We used to add a short delay to allow the connection to form
