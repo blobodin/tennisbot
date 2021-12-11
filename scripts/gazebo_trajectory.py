@@ -144,8 +144,6 @@ class Generator:
         spawn_ball(ball_p_i)
         launch_ball(ball_p_i, ball_v_i)
 
-        print(self.hit_time)
-
         # Create the trajectory segments.  When the simulation first
         # turns on, the robot sags slightly due to it own weight.  So
         # we start with a 2s hold to allow any ringing to die out.
@@ -296,7 +294,6 @@ class Generator:
         # If the current trajectory segment is done, shift to the next.
         dur = self.segments[self.index].duration()
         if (t - self.t0 >= dur):
-            print("Segment change time:", t)
             self.t0    = (self.t0    + dur)
             # self.index = (self.index + 1)                       # not cyclic!
             self.index = (self.index + 1) % len(self.segments)  # cyclic!
@@ -338,8 +335,6 @@ class Generator:
             p     = p_from_T(T)
             R     = R_from_T(T)
 
-            print(J)
-
             # Stack the linear and rotation reference velocities (summing
             # the desired velocities and scaled errors)
             # Note that we use a larger lambda for the rotation error
@@ -351,7 +346,7 @@ class Generator:
             inv = np.linalg.inv(J.T @ J + g**2 * np.eye(J.shape[1])) @ J.T
 
             # Secondary tasks
-            qsecdot = self.qdot_sec(.01, theta)
+            qsecdot = self.qdot_sec(1, theta)
             thetadot = inv @ xrdot + (1 - inv @ J) @ qsecdot
 
             # Take an IK step, using Euler integration to advance the joints.
@@ -362,15 +357,6 @@ class Generator:
 
         # Save the joint values (to be used next cycle).
         self.lasttheta = theta
-
-        # # Collect and send the JointState message (with the current time).
-        # cmdmsg = JointState()
-        # cmdmsg.name         = ['theta1', 'theta2', 'theta3',
-        #                        'theta4', 'theta5', 'theta6']
-        # cmdmsg.position     = theta
-        # cmdmsg.velocity     = thetadot
-        # cmdmsg.header.stamp = rospy.Time.now()
-        # self.pub.publish(cmdmsg)
 
         # Send the individal angle commands.
         for i in range(self.N):
