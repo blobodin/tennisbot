@@ -14,6 +14,7 @@
 #
 import rospy
 import numpy as np
+import random
 
 from sensor_msgs.msg     import JointState
 from std_msgs.msg        import Float64
@@ -25,7 +26,7 @@ from kinematics import Kinematics, p_from_T, R_from_T, Rx, Ry, Rz
 # but then we'd have to write "kinematics.p_from_T()" ...
 
 # Import the Spline stuff:
-from splines import  CubicSpline, Goto, Hold, Stay, QuinticSpline, Goto5
+from splines import  CubicSpline, Goto, Hold, Stay, QuinticSpline, Goto5, GotoConst
 
 # Import tennisball stuff:
 from ball_launcher import *
@@ -93,39 +94,35 @@ class Generator:
         # Set launched tennis ball conditions
 
         # Normal forehand normal speed
-        # ball_p_i = [0.80, 5, .9]
-        # ball_v_i = [0, -5, 4.5]
+        ball_p_i = [0.80, 5, .9]
+        ball_v_i = [0, -5, 4.5]
 
         # Normal backhand normal speed
         ball_p_i = [-0.80, 5, .9]
         ball_v_i = [0, -5, 4.5]
 
-        # Stretched/high forehand normal speed
-        # ball_p_i = [1.05, 5, 1.5]
-        # ball_v_i = [0, -5, 4.5]
+        # Faster forehand normal position
+        ball_p_i = [0.8, 5, .3]
+        ball_v_i = [0, -8, 4.5]
 
-        # Stretched/high backhand normal speed
-        # ball_p_i = [-1.05, 5, 1.5]
-        # ball_v_i = [0, -5, 4.5]
+        # Stretched/high forehand normal speed
+        ball_p_i = [1.05, 5, 1.5]
+        ball_v_i = [0, -5, 4.5]
+
+        # Too far forehand
+        ball_p_i = [1.5, 5, 2.5]
+        ball_v_i = [0, -5, 4.5]
 
         # Low forehand normal speed
-        # ball_p_i = [0.80, 5, 0.4]
-        # ball_v_i = [0, -5, 4.5]
-
-        # Low backhand normal speed
-        # ball_p_i = [-0.80, 5, 0.5]
-        # ball_v_i = [0, -5, 4.5]
-
-        # Close to body normal speed
-        # ball_p_i = [0.05, 5, 0.9]
-        # ball_v_i = [0, -5, 4.5]
+        ball_p_i = [0.80, 5, 0.4]
+        ball_v_i = [0, -5, 4.5]
 
         # Launch ball randomly
         # ball_p_i = [random.randrange(0,2), random.randrange(0,5), random.randrange(0,5)]
         # ball_v_i = [random.randrange(-2,0), random.randrange(-5,0),random.randrange(0,5)]
 
         # Setup ball kinematics using initial conditions
-        self.ball_kin = Ball_Kinematics(ball_v_i, ball_p_i)
+        self.ball_kin = Ball_Kinematics(ball_p_i, ball_v_i)
         self.hit_time = self.ball_kin.compute_time_intersect_x()
         self.hit_point = self.ball_kin.compute_pos(self.hit_time)
 
@@ -157,7 +154,7 @@ class Generator:
             self.segments = [
                 Hold(self.ready_state, self.hit_time * (4/9)),
                 Goto(self.ready_state, self.fore_hand, self.hit_time * (4/9)),
-                Goto(0.0, 1.0, self.hit_time * (2/9), space = "Path")
+                GotoConst(0.0, 1.0, self.hit_time * (2/9), space = "Path")
             ]
             # Set p and R to forehand p and R for use later
             self.p = self.fore_p
@@ -172,8 +169,7 @@ class Generator:
             self.segments = [
                 Hold(self.ready_state, self.hit_time * (4/9)),
                 Goto(self.ready_state, self.back_hand, self.hit_time * (4/9)),
-                Hold(self.back_hand, self.hit_time * (4/9)),
-                Goto(0.0, 1.0, self.hit_time * (2/9), space = "Path")
+                GotoConst(0.0, 1.0, self.hit_time * (2/9), space = "Path")
             ]
             # Set p and R to backhand p and R for use later
             self.p = self.back_p
@@ -341,6 +337,8 @@ class Generator:
             (T,J) = self.kin.fkin(theta)
             p     = p_from_T(T)
             R     = R_from_T(T)
+
+            print(J)
 
             # Stack the linear and rotation reference velocities (summing
             # the desired velocities and scaled errors)

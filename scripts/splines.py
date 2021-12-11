@@ -38,6 +38,32 @@
 #
 import math
 
+class ConstVelocitySeg:
+    def __init__(self, p0, pf, T, space='Joint'):
+        self.T = T
+        self.a = p0
+        self.b = (pf - p0) / T
+        self.usespace = space
+
+    # Return the segment's space
+    def space(self):
+        return self.usespace
+
+    # Report the segment's duration (time length).
+    def duration(self):
+        return(self.T)
+
+    # Compute the position/velocity for a given time (w.r.t. t=0 start).
+    def evaluate(self, t):
+        # Compute and return the position and velocity.
+        p = self.a + self.b * t
+        v = self.b
+        return (p,v)
+
+class GotoConst(ConstVelocitySeg):
+    # Use zero initial/final velocities (of same size as positions).
+    def __init__(self, p0, pf, T, space='Joint'):
+        ConstVelocitySeg.__init__(self, p0, pf, T, space)
 
 #
 #  Cubic Segment Objects

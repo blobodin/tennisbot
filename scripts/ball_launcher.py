@@ -54,6 +54,5 @@ def launch_ball(init_pos, init_vel):
         set_state = rospy.ServiceProxy(
           '/gazebo/set_model_state', SetModelState)
         resp = set_state(state_msg)
-        print(state_msg)
     except rospy.ServiceException:
         print("Service call failed")
